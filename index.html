@@ -47,18 +47,22 @@
     /* ── NAV ── */
     nav {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 12px;
+      left: 5%;
+      right: 5%;
       z-index: 100;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 5%;
-      background: rgba(254, 252, 249, .92);
+      padding: 10px 20px;
+      background: rgba(254, 252, 249, .85);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(212, 184, 150, .2);
+      border-radius: 50px;
+      border: 1px solid rgba(212, 184, 150, .2);
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
       transition: .3s;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .nav-logo {
@@ -215,6 +219,7 @@
 
     .hero-actions {
       display: flex;
+      justify-content: center;
       gap: 12px;
       flex-wrap: wrap;
       animation: fadeUp .7s .3s ease both;
@@ -288,7 +293,6 @@
     .iphone-wrap {
       width: 238px;
       transform: rotate(4deg) perspective(900px) rotateY(-6deg);
-      animation: float1 7s ease-in-out infinite;
       filter: drop-shadow(0 40px 60px rgba(0, 0, 0, .55)) drop-shadow(0 0 40px rgba(212, 184, 150, .12));
     }
 
@@ -957,10 +961,12 @@
 
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
       margin-top: 48px;
-      max-width: 700px;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .price-card {
@@ -1296,21 +1302,24 @@
 
     .stat-item {
       text-align: center;
+      white-space: nowrap;
     }
 
     .stat-number {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
       color: var(--green-deep);
       line-height: 1;
+      white-space: nowrap;
     }
 
     .stat-label {
-      font-size: .8rem;
+      font-size: .7rem;
       color: var(--soft);
       margin-top: 4px;
       font-weight: 600;
       letter-spacing: .03em;
+      white-space: nowrap;
     }
 
     .stat-divider {
@@ -1746,16 +1755,27 @@
         <a href="#contato" class="btn-price btn-price-secondary"
           style="display:inline-block;text-align:center;text-decoration:none;">Assinar mensal</a>
       </div>
+      <div class="price-card">
+        <div class="price-plan">Semestral</div>
+        <div class="price-value"><sup>R$</sup>44<sub>/mês</sub></div>
+        <div class="price-desc">Economia no semestre</div>
+        <ul class="price-features">
+          <li>Tudo do plano mensal</li>
+          <li>Exportar prontuário PDF</li>
+          <li>Histórico completo ilimitado</li>
+          <li>Suporte por e-mail</li>
+        </ul>
+        <a href="#contato" class="btn-price btn-price-secondary"
+          style="display:inline-block;text-align:center;text-decoration:none;">Assinar semestral</a>
+      </div>
       <div class="price-card highlight">
         <div class="price-badge">⭐ Mais popular</div>
         <div class="price-plan">Anual</div>
         <div class="price-value"><sup>R$</sup>37<sub>/mês</sub></div>
         <div class="price-desc">Economize R$144 por ano</div>
         <ul class="price-features">
-          <li>Tudo do plano mensal</li>
-          <li>Exportar prontuário PDF</li>
+          <li>Tudo do plano semestral</li>
           <li>Suporte prioritário</li>
-          <li>Histórico completo ilimitado</li>
           <li>Atualizações gratuitas</li>
           <li>2 meses grátis</li>
         </ul>
@@ -1867,8 +1887,9 @@
 
     // Nav shadow on scroll
     window.addEventListener('scroll', () => {
-      document.querySelector('nav').style.boxShadow =
-        window.scrollY > 20 ? '0 2px 20px rgba(10,92,82,.12)' : 'none';
+      const nav = document.querySelector('nav');
+      nav.style.boxShadow =
+        window.scrollY > 20 ? '0 6px 24px rgba(0,0,0,.12)' : '0 4px 20px rgba(0,0,0,.08)';
     });
 
     // Animate on scroll
