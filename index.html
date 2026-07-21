@@ -981,6 +981,7 @@
     }
 
     .price-card.highlight {
+      position: relative;
       background: var(--warm-white);
       border: 2px solid var(--gold);
       box-shadow: 0 0 40px rgba(212, 184, 150, .25);
@@ -991,15 +992,18 @@
     }
 
     .price-badge {
-      display: inline-block;
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
       background: var(--gold);
       color: var(--charcoal);
       font-size: .65rem;
       font-weight: 800;
-      padding: 4px 12px;
+      padding: 4px 16px;
       border-radius: 20px;
-      margin-bottom: 16px;
       letter-spacing: .05em;
+      white-space: nowrap;
     }
 
     .price-plan {
@@ -1744,19 +1748,12 @@
   <section class="pricing-section" id="preco">
     <div class="section-label">Planos</div>
     <h2 class="section-title">Investimento que cabe<br>no seu bolso</h2>
-    <p class="section-sub">Menos de um atendimento por mês</p>
+    <p class="section-sub">Menos de um atendimento por mês!</p>
     <div class="pricing-grid">
       <div class="price-card">
         <div class="price-plan">Mensal</div>
         <div class="price-value"><sup>R$</sup>47,90<sub>/mês</sub></div>
         <div class="price-desc">flexível, cancela quando quiser</div>
-        <a href="#contato" class="btn-price btn-price-secondary"
-          style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
-      </div>
-      <div class="price-card">
-        <div class="price-plan">Semestral</div>
-        <div class="price-value"><sup>R$</sup>39,90<sub>/mês</sub></div>
-        <div class="price-desc">12x R$39,90 sem juros - economize R$96</div>
         <a href="#contato" class="btn-price btn-price-secondary"
           style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
       </div>
@@ -1767,6 +1764,13 @@
         <div class="price-desc">12x R$29,90 sem juros - economize R$216</div>
         <a href="#contato" class="btn-price btn-price-primary"
           style="display:inline-block;text-align:center;text-decoration:none;">Assinar agora</a>
+      </div>
+      <div class="price-card">
+        <div class="price-plan">Semestral</div>
+        <div class="price-value"><sup>R$</sup>39,90<sub>/mês</sub></div>
+        <div class="price-desc">12x R$39,90 sem juros - economize R$96</div>
+        <a href="#contato" class="btn-price btn-price-secondary"
+          style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
       </div>
     </div>
   </section>
