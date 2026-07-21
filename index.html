@@ -1294,8 +1294,8 @@
     .stats-grid {
       display: flex;
       justify-content: center;
-      gap: 48px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 24px;
       max-width: 800px;
       margin: 0 auto;
     }
@@ -1329,7 +1329,11 @@
 
     @media(max-width:600px) {
       .stats-grid {
-        gap: 28px;
+        gap: 12px;
+      }
+
+      .stat-label {
+        font-size: .6rem;
       }
     }
 
