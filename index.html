@@ -1007,11 +1007,11 @@
     }
 
     .price-plan {
+      font-family: 'Cormorant Garamond', serif;
       color: rgba(255, 255, 255, .7);
-      font-size: .75rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
+      letter-spacing: .04em;
       margin-bottom: 8px;
     }
 
@@ -1069,6 +1069,7 @@
     }
 
     .price-card.highlight .price-plan {
+      font-family: 'Cormorant Garamond', serif !important;
       color: var(--soft) !important;
     }
 
@@ -1134,8 +1135,9 @@
     }
 
     .guarantee-icon {
-      font-size: 3.5rem;
       margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
     }
 
     .guarantee-title {
@@ -1668,8 +1670,9 @@
       <div class="step">
         <div class="step-num">1</div>
         <div class="step-content">
-          <div class="step-title">Crie sua conta</div>
-          <div class="step-desc">Cadastre-se com e-mail e senha. Configure seu nome, CREFITO e especialidade — leva
+          <div class="step-title">Acessando sua conta</div>
+          <div class="step-desc">Acesse com e-mail e senha recebidos por email apos a confirmação do pagamento.
+            Configure seu nome, CREFITO e especialidade — leva
             menos de 2 minutos.</div>
         </div>
       </div>
@@ -1692,9 +1695,9 @@
       <div class="step">
         <div class="step-num">4</div>
         <div class="step-content">
-          <div class="step-title">Envie o link pelo WhatsApp</div>
-          <div class="step-desc">Com 1 toque, seu paciente recebe o link, visualiza o resumo do atendimento e assina
-            digitalmente com o dedo.</div>
+          <div class="step-title">Confirme o atendimento pelo WhatsApp</div>
+          <div class="step-desc">Com 2 toques, seu paciente recebe o resumo do atendimento e acompanha todo tratamento
+            pelo WhatsApp.</div>
         </div>
       </div>
     </div>
@@ -1778,10 +1781,16 @@
   <!-- GARANTIA -->
   <section class="guarantee-section">
     <div class="guarantee-box">
-      <div class="guarantee-icon">🛡️</div>
+      <div class="guarantee-icon">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="26" stroke="var(--green-mid)" stroke-width="2.5"/>
+          <circle cx="28" cy="28" r="20" fill="var(--green-pale)"/>
+          <path d="M22 28l4.5 4.5L34 24" stroke="var(--green-deep)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <div class="guarantee-title">7 dias de garantia total</div>
-      <p class="guarantee-text">Experimente sem risco, cancelou dentro do prazo devolvemos 100% do seu dinheiro, sem
-        burocracia. SIMPLES ASSIM!</p>
+      <p class="guarantee-text">Experimente sem riscos. Se cancelar dentro do prazo, devolvemos 100% do seu dinheiro.
+        Simples assim!</p>
       <a href="#preco" class="btn-hero btn-hero-primary guarantee-cta">Quero testar sem risco</a>
     </div>
   </section>
@@ -1809,7 +1818,8 @@
         <button class="faq-question" onclick="toggleFaq(this)">
           Como funciona a confirmação de atendimento pelo WhatsApp? <span class="faq-arrow">＋</span>
         </button>
-        <div class="faq-answer">Após as informações do atendimento, você toca em "Confirmar atendimento". O WhatsApp
+        <div class="faq-answer">Após incluir as informações do atendimento, você toca em "Confirmar atendimento". O
+          WhatsApp
           abre com uma
           mensagem pronta e basta clicar em enviar. O paciente recebe a mensagem com as informações do atendimento.
         </div>
