@@ -1904,27 +1904,37 @@
     });
 
     // Animate on scroll
+    const showEl = el => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    };
+
+    const elts = document.querySelectorAll('.pain-card,.feature-card,.step,.testimonial-card,.price-card');
+    elts.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity .55s ease, transform .55s ease';
+    });
+
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          e.target.style.opacity = '1';
-          e.target.style.transform = 'translateY(0)';
+          showEl(e.target);
           obs.unobserve(e.target);
         }
       });
     }, { threshold: 0.05 });
 
-    document.querySelectorAll('.pain-card,.feature-card,.step,.testimonial-card,.price-card').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(24px)';
-      el.style.transition = 'opacity .55s ease, transform .55s ease';
-      if (el.getBoundingClientRect().top < window.innerHeight) {
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      } else {
-        obs.observe(el);
-      }
-    });
+    elts.forEach(el => obs.observe(el));
+
+    // Fallback for hash navigation (e.g. #preco)
+    setTimeout(() => {
+      elts.forEach(el => {
+        if (el.style.opacity === '0' && el.getBoundingClientRect().top < window.innerHeight) {
+          showEl(el);
+        }
+      });
+    }, 400);
   </script>
 </body>
 
