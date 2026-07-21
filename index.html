@@ -97,6 +97,8 @@
     .hero {
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
       background: linear-gradient(160deg, #062e28 0%, var(--green-deep) 50%, #0d3d37 100%);
       position: relative;
@@ -158,6 +160,9 @@
       position: relative;
       z-index: 1;
       max-width: 640px;
+      width: 100%;
+      align-self: flex-start;
+      text-align: left;
     }
 
     .hero-pill {
@@ -188,6 +193,7 @@
       font-size: clamp(2.4rem, 6vw, 3.8rem);
       color: #fff;
       line-height: 1.1;
+      text-align: left;
       margin-bottom: 20px;
       animation: fadeUp .7s .1s ease both;
     }
@@ -249,45 +255,28 @@
       color: var(--gold-light);
     }
 
-    .hero-trust {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 36px;
-      animation: fadeUp .7s .4s ease both;
-    }
-
-    .hero-trust-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: rgba(255, 255, 255, .6);
-      font-size: .78rem;
-    }
-
-    .hero-trust-item span {
-      font-size: 14px;
-    }
-
-    .hero-trust-sep {
-      width: 1px;
-      height: 20px;
-      background: rgba(255, 255, 255, .15);
-    }
-
     /* ── IPHONE MOCKUP ── */
     .hero-visual {
-      position: absolute;
-      right: 5%;
-      top: 50%;
-      transform: translateY(-50%);
+      position: relative;
+      right: auto;
+      top: auto;
+      transform: none;
       z-index: 1;
-      display: none;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 36px;
     }
 
     @media(min-width:900px) {
       .hero-visual {
+        position: absolute;
+        right: 5%;
+        top: 50%;
+        transform: translateY(-50%);
         display: block;
+        width: auto;
+        margin-top: 0;
       }
 
       .hero-content {
@@ -1444,7 +1433,7 @@
       <p class="hero-subtitle">Chega de papéis, anotações perdidas e retrabalho. Organize sua rotina de home care com um
         prontuário digital desenvolvido para fisioterapeutas.</p>
       <div class="hero-actions">
-        <a href="#preco" class="btn-hero btn-hero-primary">Quero experimentar</a>
+        <a href="#preco" class="btn-hero btn-hero-primary">Começar agora →</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -1838,7 +1827,6 @@
       atendimentos home care.</p>
     <div class="cta-actions">
       <a href="#preco" class="btn-hero btn-hero-primary">Começar agora — R$29/mês</a>
-      <a href="#como-funciona" class="btn-hero btn-hero-secondary">Ver como funciona</a>
     </div>
   </section>
 
