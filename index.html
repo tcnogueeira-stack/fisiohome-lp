@@ -611,6 +611,25 @@
       }
     }
 
+    .pain-card,
+    .feature-card,
+    .step,
+    .testimonial-card,
+    .price-card {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+
+    .pain-card.visible,
+    .feature-card.visible,
+    .step.visible,
+    .testimonial-card.visible,
+    .price-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     /* ── SECTION COMUM ── */
     section {
       padding: 80px 5%;
@@ -1904,37 +1923,18 @@
     });
 
     // Animate on scroll
-    const showEl = el => {
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    };
-
-    const elts = document.querySelectorAll('.pain-card,.feature-card,.step,.testimonial-card,.price-card');
-    elts.forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(24px)';
-      el.style.transition = 'opacity .55s ease, transform .55s ease';
-    });
-
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          showEl(e.target);
+          e.target.classList.add('visible');
           obs.unobserve(e.target);
         }
       });
     }, { threshold: 0.05 });
 
-    elts.forEach(el => obs.observe(el));
-
-    // Fallback for hash navigation (e.g. #preco)
-    setTimeout(() => {
-      elts.forEach(el => {
-        if (el.style.opacity === '0' && el.getBoundingClientRect().top < window.innerHeight) {
-          showEl(el);
-        }
-      });
-    }, 400);
+    document.querySelectorAll('.pain-card,.feature-card,.step,.testimonial-card,.price-card').forEach(el => {
+      obs.observe(el);
+    });
   </script>
 </body>
 
