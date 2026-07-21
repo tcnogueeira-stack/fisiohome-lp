@@ -1909,15 +1909,21 @@
         if (e.isIntersecting) {
           e.target.style.opacity = '1';
           e.target.style.transform = 'translateY(0)';
+          obs.unobserve(e.target);
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.05 });
 
     document.querySelectorAll('.pain-card,.feature-card,.step,.testimonial-card,.price-card').forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(24px)';
       el.style.transition = 'opacity .55s ease, transform .55s ease';
-      obs.observe(el);
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      } else {
+        obs.observe(el);
+      }
     });
   </script>
 </body>
