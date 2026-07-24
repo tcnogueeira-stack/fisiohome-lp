@@ -8,10 +8,23 @@ const ASAAS_KEY = Deno.env.get("ASAAS_API_KEY") || "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+};
+
 const ASAAS_HEADERS = {
   "Content-Type": "application/json",
   "access_token": ASAAS_KEY,
 };
+
+function json(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+  });
+}
 
 function api(path: string, options: RequestInit = {}) {
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -32,14 +45,18 @@ const PLANS = {
 } as const;
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
+
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Método não permitido" }), { status: 405 });
+    return json({ error: "Método não permitido" }, 405);
   }
 
   try {
     const { name, email, phone, cpfCnpj, plan } = await req.json();
     if (!name || !email || !plan) {
-      return new Response(JSON.stringify({ error: "name, email e plan são obrigatórios" }), { status: 400 });
+      return json({ error: "name, email e plan são obrigatórios" }, 400);
     }
 
     // 1. Cliente no Asaas
@@ -109,7 +126,6 @@ serve(async (req) => {
             payload: firstPayment.pixQrCode.payload,
           };
         } else {
-          // Se não veio no list, buscar detalhe da cobrança
           const payDetail = await fetch(`${ASAAS_URL}/payments/${firstPayment.id}`, {
             headers: ASAAS_HEADERS,
           }).then(r => r.json());
@@ -126,7 +142,7 @@ serve(async (req) => {
       // Non-critical: PIX data is optional
     }
 
-    return new Response(JSON.stringify({
+    return json({
       ok: true,
       subscriptionId: sub.id,
       customerId: cust.id,
@@ -134,12 +150,9 @@ serve(async (req) => {
       value: p.value / 100,
       pixQrCode,
       invoiceUrl,
-    }), { headers: { "Content-Type": "application/json" } });
+    });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: err.message }, 400);
   }
 });
