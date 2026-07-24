@@ -1634,6 +1634,48 @@
       flex: 1;
     }
 
+    /* ── INLINE VALIDATION ── */
+    .modal-field.error input {
+      border-color: #b91c1c;
+      background: #fef2f2;
+    }
+
+    .modal-field.error .field-error {
+      display: block;
+    }
+
+    .field-error {
+      display: none;
+      font-size: .72rem;
+      color: #b91c1c;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* ── LOADING SPINNER ── */
+    .modal-submit .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin: 0 auto;
+    }
+
+    .modal-submit.loading .spinner {
+      display: block;
+    }
+
+    .modal-submit.loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* ── SUCCESS DISPLAY ── */
     .success-display {
       text-align: center;
@@ -2184,21 +2226,25 @@
       <!-- Form -->
       <div id="checkoutForm">
         <div class="modal-error" id="modalError"></div>
-        <div class="modal-field">
+        <div class="modal-field" id="fieldGroupName">
           <label for="fieldName">Nome completo</label>
           <input id="fieldName" type="text" placeholder="Seu nome" autocomplete="name">
+          <div class="field-error" id="fieldErrorName"></div>
         </div>
-        <div class="modal-field">
+        <div class="modal-field" id="fieldGroupEmail">
           <label for="fieldEmail">E-mail</label>
           <input id="fieldEmail" type="email" placeholder="seu@email.com" autocomplete="email">
+          <div class="field-error" id="fieldErrorEmail"></div>
         </div>
-        <div class="modal-field">
+        <div class="modal-field" id="fieldGroupPhone">
           <label for="fieldPhone">Telefone (WhatsApp)</label>
-          <input id="fieldPhone" type="tel" placeholder="(61) 99999-8888" autocomplete="tel">
+          <input id="fieldPhone" type="tel" placeholder="(61) 99999-8888" autocomplete="tel" oninput="maskPhone(this)">
+          <div class="field-error" id="fieldErrorPhone"></div>
         </div>
-        <div class="modal-field">
+        <div class="modal-field" id="fieldGroupCpf">
           <label for="fieldCpf">CPF / CNPJ</label>
-          <input id="fieldCpf" type="text" placeholder="000.000.000-00">
+          <input id="fieldCpf" type="text" placeholder="000.000.000-00" oninput="maskCpf(this)">
+          <div class="field-error" id="fieldErrorCpf"></div>
         </div>
 
         <!-- Payment method -->
@@ -2213,38 +2259,45 @@
 
         <!-- Credit card fields -->
         <div class="card-fields" id="cardFields">
-          <div class="modal-field">
+          <div class="modal-field" id="fieldGroupCardNumber">
             <label for="fieldCardNumber">Número do cartão</label>
-            <input id="fieldCardNumber" type="text" placeholder="0000 0000 0000 0000" maxlength="19">
+            <input id="fieldCardNumber" type="text" placeholder="0000 0000 0000 0000" maxlength="19" oninput="maskCardNumber(this)">
+            <div class="field-error" id="fieldErrorCardNumber"></div>
           </div>
           <div class="card-row">
-            <div class="modal-field">
+            <div class="modal-field" id="fieldGroupCardExpiry">
               <label for="fieldCardExpiry">Validade</label>
-              <input id="fieldCardExpiry" type="text" placeholder="MM/AA" maxlength="5">
+              <input id="fieldCardExpiry" type="text" placeholder="MM/AA" maxlength="5" oninput="maskExpiry(this)">
+              <div class="field-error" id="fieldErrorCardExpiry"></div>
             </div>
-            <div class="modal-field">
+            <div class="modal-field" id="fieldGroupCardCvv">
               <label for="fieldCardCvv">CVV</label>
               <input id="fieldCardCvv" type="text" placeholder="123" maxlength="4">
+              <div class="field-error" id="fieldErrorCardCvv"></div>
             </div>
           </div>
-          <div class="modal-field">
+          <div class="modal-field" id="fieldGroupCardHolder">
             <label for="fieldCardHolder">Nome no cartão</label>
             <input id="fieldCardHolder" type="text" placeholder="Como está gravado no cartão">
+            <div class="field-error" id="fieldErrorCardHolder"></div>
           </div>
           <div class="card-row">
-            <div class="modal-field">
+            <div class="modal-field" id="fieldGroupCep">
               <label for="fieldCep">CEP</label>
-              <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9">
+              <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9" oninput="maskCep(this)">
+              <div class="field-error" id="fieldErrorCep"></div>
             </div>
-            <div class="modal-field">
+            <div class="modal-field" id="fieldGroupAddressNum">
               <label for="fieldAddressNum">Número</label>
               <input id="fieldAddressNum" type="text" placeholder="Nº">
+              <div class="field-error" id="fieldErrorAddressNum"></div>
             </div>
           </div>
         </div>
 
         <button class="modal-submit" id="modalSubmit" onclick="submitCheckout()">
-          Quero começar agora →
+          <span class="btn-text">Quero começar agora →</span>
+          <div class="spinner"></div>
         </button>
       </div>
 
@@ -2351,6 +2404,7 @@
 
     // ── MODAL ──
     function openCheckout(plan) {
+      clearFieldErrors();
       selectedPlan = plan || 'anual';
       selectedMethod = 'PIX';
       const p = PLANS[selectedPlan];
@@ -2364,7 +2418,7 @@
       document.getElementById('modalError').classList.remove('visible');
       document.getElementById('modalSubmit').disabled = false;
       document.getElementById('modalSubmit').style.display = 'block';
-      document.getElementById('modalSubmit').textContent = 'Quero começar agora →';
+      document.getElementById('modalSubmit').classList.remove('loading');
       // Reset payment toggle
       document.querySelectorAll('.payment-option').forEach(el => {
         el.classList.toggle('active', el.dataset.method === 'PIX');
@@ -2383,6 +2437,61 @@
       if (e.target === this) closeCheckout();
     });
 
+    // ── INPUT MASKS ──
+    function maskPhone(el) {
+      let v = el.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 6) v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+      else if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+      else if (v.length > 0) v = `(${v}`;
+      el.value = v;
+    }
+
+    function maskCpf(el) {
+      let v = el.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 9) v = `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}`;
+      else if (v.length > 6) v = `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}`;
+      else if (v.length > 3) v = `${v.slice(0, 3)}.${v.slice(3)}`;
+      el.value = v;
+    }
+
+    function maskCardNumber(el) {
+      let v = el.value.replace(/\D/g, '');
+      if (v.length > 16) v = v.slice(0, 16);
+      v = v.replace(/(.{4})/g, '$1 ').trim();
+      el.value = v;
+    }
+
+    function maskExpiry(el) {
+      let v = el.value.replace(/\D/g, '');
+      if (v.length > 4) v = v.slice(0, 4);
+      if (v.length > 2) v = `${v.slice(0, 2)}/${v.slice(2)}`;
+      el.value = v;
+    }
+
+    function maskCep(el) {
+      let v = el.value.replace(/\D/g, '');
+      if (v.length > 8) v = v.slice(0, 8);
+      if (v.length > 5) v = `${v.slice(0, 5)}-${v.slice(5)}`;
+      el.value = v;
+    }
+
+    // ── INLINE VALIDATION ──
+    function clearFieldErrors() {
+      document.querySelectorAll('.modal-field.error').forEach(el => el.classList.remove('error'));
+      document.getElementById('modalError').classList.remove('visible');
+    }
+
+    function showFieldError(fieldId, msg) {
+      const group = document.getElementById(`fieldGroup${fieldId}`);
+      if (group) {
+        group.classList.add('error');
+        const errorEl = document.getElementById(`fieldError${fieldId}`);
+        if (errorEl) errorEl.textContent = msg;
+      }
+    }
+
     // ── PAYMENT METHOD ──
     function selectPayment(el) {
       document.querySelectorAll('.payment-option').forEach(e => e.classList.remove('active'));
@@ -2393,16 +2502,19 @@
 
     // ── SUBMIT ──
     async function submitCheckout() {
+      clearFieldErrors();
+
       const name = document.getElementById('fieldName').value.trim();
       const email = document.getElementById('fieldEmail').value.trim();
       const phone = document.getElementById('fieldPhone').value.trim();
       const cpfCnpj = document.getElementById('fieldCpf').value.trim();
       const errorEl = document.getElementById('modalError');
 
-      // Validação
-      if (!name)  { showError('Informe seu nome.'); return; }
-      if (!email) { showError('Informe seu e-mail.'); return; }
-      if (!phone) { showError('Informe seu telefone.'); return; }
+      // Validação inline
+      let hasError = false;
+      if (!name)  { showFieldError('Name', 'Informe seu nome.'); hasError = true; }
+      if (!email) { showFieldError('Email', 'Informe seu e-mail.'); hasError = true; }
+      if (!phone || phone.replace(/\D/g, '').length < 10) { showFieldError('Phone', 'Informe um telefone válido.'); hasError = true; }
 
       // Montar body
       const body = {
@@ -2420,11 +2532,13 @@
         const cep = document.getElementById('fieldCep').value.trim();
         const addressNum = document.getElementById('fieldAddressNum').value.trim();
 
-        if (!cardNumber || cardNumber.length < 13) { showError('Informe um número de cartão válido.'); return; }
-        if (!cardExpiry || !cardExpiry.includes('/')) { showError('Informe a validade (MM/AA).'); return; }
-        if (!cardCvv || cardCvv.length < 3) { showError('Informe o CVV.'); return; }
-        if (!cardHolder) { showError('Informe o nome no cartão.'); return; }
-        if (!cep) { showError('Informe seu CEP.'); return; }
+        if (!cardNumber || cardNumber.length < 13) { showFieldError('CardNumber', 'Número de cartão inválido.'); hasError = true; }
+        if (!cardExpiry || !cardExpiry.includes('/')) { showFieldError('CardExpiry', 'Informe MM/AA.'); hasError = true; }
+        if (!cardCvv || cardCvv.length < 3) { showFieldError('CardCvv', 'CVV inválido.'); hasError = true; }
+        if (!cardHolder) { showFieldError('CardHolder', 'Informe o nome no cartão.'); hasError = true; }
+        if (!cep || cep.replace(/\D/g, '').length < 8) { showFieldError('Cep', 'Informe um CEP válido.'); hasError = true; }
+
+        if (hasError) return;
 
         const [expiryMonth, expiryYear] = cardExpiry.split('/');
         body.creditCard = {
@@ -2442,12 +2556,13 @@
           addressNumber: addressNum || 'S/N',
           phone: phone.replace(/\D/g, ''),
         };
+      } else {
+        if (hasError) return;
       }
 
-      errorEl.classList.remove('visible');
       const btn = document.getElementById('modalSubmit');
       btn.disabled = true;
-      btn.textContent = 'Processando...';
+      btn.classList.add('loading');
 
       try {
         const res = await fetch(ASAAS_CHECKOUT_URL, {
@@ -2460,7 +2575,7 @@
         if (!res.ok || data.error) {
           showError(data.error || 'Erro ao processar. Tente novamente.');
           btn.disabled = false;
-          btn.textContent = 'Quero começar agora →';
+          btn.classList.remove('loading');
           return;
         }
 
@@ -2501,7 +2616,7 @@
       } catch (err) {
         showError('Erro de conexão. Verifique sua internet e tente novamente.');
         btn.disabled = false;
-        btn.textContent = 'Quero começar agora →';
+        btn.classList.remove('loading');
       }
     }
 
@@ -2510,6 +2625,12 @@
       el.textContent = msg;
       el.classList.add('visible');
     }
+
+    // Limpar erros ao digitar
+    document.addEventListener('input', function (e) {
+      const field = e.target.closest('.modal-field');
+      if (field) field.classList.remove('error');
+    });
 
     function copyPix() {
       const code = document.getElementById('pixCode').textContent;
