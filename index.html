@@ -1438,6 +1438,239 @@
       color: var(--gold-light);
     }
 
+    /* ── MODAL CHECKOUT ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, .6);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--warm-white);
+      border-radius: 24px;
+      padding: 36px 32px 32px;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .3);
+      animation: fadeUp .3s ease both;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      color: var(--soft);
+      cursor: pointer;
+      transition: .2s;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: var(--charcoal);
+    }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      color: var(--charcoal);
+      margin-bottom: 4px;
+    }
+
+    .modal-plan {
+      font-size: .85rem;
+      color: var(--mid);
+      margin-bottom: 24px;
+    }
+
+    .modal-plan strong {
+      color: var(--green-deep);
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 5px;
+    }
+
+    .modal-field input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      color: var(--charcoal);
+      background: var(--cream);
+      transition: .2s;
+      outline: none;
+    }
+
+    .modal-field input:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(19, 160, 144, .12);
+      background: #fff;
+    }
+
+    .modal-field input::placeholder {
+      color: var(--soft);
+    }
+
+    .modal-submit {
+      width: 100%;
+      padding: 14px;
+      border-radius: 50px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--green-light), var(--green-deep));
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(10, 92, 82, .3);
+      transition: .25s;
+      margin-top: 4px;
+    }
+
+    .modal-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(10, 92, 82, .4);
+    }
+
+    .modal-submit:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .modal-error {
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: .8rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .modal-error.visible {
+      display: block;
+    }
+
+    /* ── PIX DISPLAY ── */
+    .pix-display {
+      text-align: center;
+      display: none;
+    }
+
+    .pix-display.visible {
+      display: block;
+    }
+
+    .pix-display .pix-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+
+    .pix-display .pix-sub {
+      font-size: .8rem;
+      color: var(--mid);
+      margin-bottom: 20px;
+    }
+
+    .pix-qr {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 16px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .pix-qr img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .pix-code-box {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .pix-code-box span {
+      flex: 1;
+      font-size: .72rem;
+      color: var(--mid);
+      text-align: left;
+      word-break: break-all;
+      line-height: 1.4;
+      max-height: 48px;
+      overflow-y: auto;
+    }
+
+    .pix-copy-btn {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--green-deep);
+      color: #fff;
+      transition: .2s;
+      white-space: nowrap;
+    }
+
+    .pix-copy-btn:hover {
+      background: var(--green-mid);
+    }
+
+    .pix-copy-btn.copied {
+      background: var(--gold-deep);
+    }
+
+    .pix-footer {
+      font-size: .75rem;
+      color: var(--soft);
+      margin-top: 8px;
+    }
+
     @media(max-width:600px) {
       section {
         padding: 60px 5%;
@@ -1453,6 +1686,10 @@
       .guarantee-box {
         padding: 28px 20px;
       }
+
+      .modal-box {
+        padding: 28px 20px 24px;
+      }
     }
   </style>
 </head>
@@ -1462,7 +1699,7 @@
   <!-- NAV -->
   <nav>
     <a href="#" class="nav-logo">Fisio<span>Home</span></a>
-    <a href="#preco" class="nav-cta">Começar agora</a>
+    <a href="javascript:void(0)" onclick="openCheckout('anual')" class="nav-cta">Começar agora</a>
   </nav>
 
   <!-- HERO -->
@@ -1474,7 +1711,7 @@
       <p class="hero-subtitle">Fisioterapeutas home care perdem em média 40 minutos por dia com papelada, fichas
         perdidas e burocracia desnecessária. Esse tempo é seu — e você pode recuperá-lo ainda hoje.</p>
       <div class="hero-actions">
-        <a href="#preco" class="btn-hero btn-hero-primary">Quero recuperar meu tempo →</a>
+        <a href="javascript:void(0)" onclick="openCheckout('anual')" class="btn-hero btn-hero-primary">Quero recuperar meu tempo →</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -1652,7 +1889,7 @@
         <div class="feature-icon">📋</div>
         <div class="feature-title">Toda a evolução clínica em um só lugar</div>
         <div class="feature-desc">Sinais vitais, escala de dor, procedimentos realizados, queixas — tudo registrado em
-          menos de 2 minutos e disponível na hora que você precisar, de qualquer celular ou tablet.</div>
+          menos de 2 minutos e disponível na hora que você precisar, de qualquer celular, tablet ou computador.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔍</div>
@@ -1776,7 +2013,7 @@
         <div class="price-plan">Mensal</div>
         <div class="price-value"><sup>R$</sup>47,90<sub>/mês</sub></div>
         <div class="price-desc">flexível, cancela quando quiser</div>
-        <a href="#contato" class="btn-price btn-price-secondary"
+        <a href="javascript:void(0)" onclick="openCheckout('mensal')" class="btn-price btn-price-secondary"
           style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
       </div>
       <div class="price-card highlight">
@@ -1784,14 +2021,14 @@
         <div class="price-plan">Anual</div>
         <div class="price-value"><sup>R$</sup>29,90<sub>/mês</sub></div>
         <div class="price-desc">12x R$29,90 sem juros - economize R$216</div>
-        <a href="#contato" class="btn-price btn-price-primary"
+        <a href="javascript:void(0)" onclick="openCheckout('anual')" class="btn-price btn-price-primary"
           style="display:inline-block;text-align:center;text-decoration:none;">Assinar agora</a>
       </div>
       <div class="price-card">
         <div class="price-plan">Semestral</div>
         <div class="price-value"><sup>R$</sup>39,90<sub>/mês</sub></div>
         <div class="price-desc">12x R$39,90 sem juros - economize R$96</div>
-        <a href="#contato" class="btn-price btn-price-secondary"
+        <a href="javascript:void(0)" onclick="openCheckout('semestral')" class="btn-price btn-price-secondary"
           style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
       </div>
     </div>
@@ -1811,7 +2048,7 @@
       <div class="guarantee-title">7 dias de garantia total, sem perguntas</div>
       <p class="guarantee-text">Acesse, use, teste tudo. Se em 7 dias você não sentir diferença na sua rotina,
         devolvemos 100% do valor. Sem burocracia, sem discussão.</p>
-      <a href="#preco" class="btn-hero btn-hero-primary guarantee-cta">Quero testar sem risco →</a>
+      <a href="javascript:void(0)" onclick="openCheckout('anual')" class="btn-hero btn-hero-primary guarantee-cta">Quero testar sem risco →</a>
     </div>
   </section>
 
@@ -1853,13 +2090,58 @@
     </div>
   </section>
 
+  <!-- MODAL CHECKOUT -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeCheckout()">✕</button>
+      <div class="modal-title">FisioHome</div>
+      <div class="modal-plan">Plano: <strong id="modalPlanName">Anual</strong> — <span id="modalPlanPrice">R$ 29,90</span><span id="modalPlanPeriod">/mês</span></div>
+
+      <!-- Form -->
+      <div id="checkoutForm">
+        <div class="modal-error" id="modalError"></div>
+        <div class="modal-field">
+          <label for="fieldName">Nome completo</label>
+          <input id="fieldName" type="text" placeholder="Seu nome" autocomplete="name">
+        </div>
+        <div class="modal-field">
+          <label for="fieldEmail">E-mail</label>
+          <input id="fieldEmail" type="email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="modal-field">
+          <label for="fieldPhone">Telefone (WhatsApp)</label>
+          <input id="fieldPhone" type="tel" placeholder="(61) 99999-8888" autocomplete="tel">
+        </div>
+        <div class="modal-field">
+          <label for="fieldCpf">CPF / CNPJ</label>
+          <input id="fieldCpf" type="text" placeholder="000.000.000-00">
+        </div>
+        <button class="modal-submit" id="modalSubmit" onclick="submitCheckout()">
+          Quero começar agora →
+        </button>
+      </div>
+
+      <!-- PIX display -->
+      <div class="pix-display" id="pixDisplay">
+        <div class="pix-title">⏳ Pagamento pendente</div>
+        <div class="pix-sub">Escaneie o QR Code abaixo ou copie o código PIX para pagar</div>
+        <div class="pix-qr" id="pixQr"><img src="" alt="QR Code PIX"></div>
+        <div class="pix-code-box">
+          <span id="pixCode">carregando...</span>
+          <button class="pix-copy-btn" id="pixCopyBtn" onclick="copyPix()">Copiar</button>
+        </div>
+        <div class="pix-footer">Após o pagamento, seu acesso será liberado em até 2 minutos.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- CTA FINAL -->
   <section class="cta-section">
     <h2 class="cta-title">Sua rotina pode ser<br> <em>muito mais leve </em> do que é hoje.</h2>
     <p class="cta-sub">Cada atendimento que passa sem organização é tempo e energia que você não vai recuperar. Centenas
       de fisioterapeutas home care já mudaram a rotina — e você pode fazer o mesmo agora.</p>
     <div class="cta-actions">
-      <a href="#preco" class="btn-hero btn-hero-primary">Quero começar agora →</a>
+      <a href="javascript:void(0)" onclick="openCheckout('anual')" class="btn-hero btn-hero-primary">Quero começar agora →</a>
     </div>
   </section>
 
@@ -1910,6 +2192,19 @@
   </footer>
 
   <script>
+    // ── CONFIG ──
+    const ASAAS_CHECKOUT_URL = 'https://alwwhsckljdmwcodnnti.supabase.co/functions/v1/create-checkout';
+    // ── ──
+
+    const PLANS = {
+      mensal:    { label: 'Mensal',    price: 'R$ 47,90', period: '/mês' },
+      semestral: { label: 'Semestral', price: 'R$ 39,90', period: '/mês' },
+      anual:     { label: 'Anual',     price: 'R$ 29,90', period: '/mês' },
+    };
+
+    let selectedPlan = 'anual';
+
+    // ── FAQ ──
     function toggleFaq(btn) {
       const item = btn.closest('.faq-item');
       const wasOpen = item.classList.contains('open');
@@ -1917,14 +2212,123 @@
       if (!wasOpen) item.classList.add('open');
     }
 
-    // Nav shadow on scroll
+    // ── MODAL ──
+    function openCheckout(plan) {
+      selectedPlan = plan || 'anual';
+      const p = PLANS[selectedPlan];
+      document.getElementById('modalPlanName').textContent = p.label;
+      document.getElementById('modalPlanPrice').textContent = p.price;
+      document.getElementById('modalPlanPeriod').textContent = p.period;
+      document.getElementById('checkoutForm').style.display = 'block';
+      document.getElementById('pixDisplay').classList.remove('visible');
+      document.getElementById('modalError').classList.remove('visible');
+      document.getElementById('modalSubmit').disabled = false;
+      document.getElementById('modalSubmit').textContent = 'Quero começar agora →';
+      document.getElementById('modalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCheckout() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Fechar ao clicar fora
+    document.getElementById('modalOverlay').addEventListener('click', function (e) {
+      if (e.target === this) closeCheckout();
+    });
+
+    // ── SUBMIT ──
+    async function submitCheckout() {
+      const name = document.getElementById('fieldName').value.trim();
+      const email = document.getElementById('fieldEmail').value.trim();
+      const phone = document.getElementById('fieldPhone').value.trim();
+      const cpfCnpj = document.getElementById('fieldCpf').value.trim();
+      const errorEl = document.getElementById('modalError');
+
+      // Validação
+      if (!name)  { showError('Informe seu nome.'); return; }
+      if (!email) { showError('Informe seu e-mail.'); return; }
+      if (!phone) { showError('Informe seu telefone.'); return; }
+
+      errorEl.classList.remove('visible');
+      const btn = document.getElementById('modalSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Processando...';
+
+      try {
+        const res = await fetch(ASAAS_CHECKOUT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, cpfCnpj, plan: selectedPlan }),
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          showError(data.error || 'Erro ao processar. Tente novamente.');
+          btn.disabled = false;
+          btn.textContent = 'Quero começar agora →';
+          return;
+        }
+
+        // Mostra PIX
+        document.getElementById('checkoutForm').style.display = 'none';
+        const pixDisplay = document.getElementById('pixDisplay');
+        pixDisplay.classList.add('visible');
+
+        if (data.pixQrCode) {
+          // QR Code
+          const qrImg = document.querySelector('#pixQr img');
+          qrImg.src = `data:image/png;base64,${data.pixQrCode.encodedImage}`;
+          document.getElementById('pixCode').textContent = data.pixQrCode.payload;
+          pixDisplay.querySelector('.pix-sub').textContent =
+            'Escaneie o QR Code abaixo ou copie o código PIX para pagar';
+        } else if (data.invoiceUrl) {
+          // Fallback: link da fatura
+          pixDisplay.querySelector('.pix-qr').innerHTML =
+            `<a href="${data.invoiceUrl}" target="_blank" style="font-size:.85rem;color:var(--green-deep);font-weight:700;">Acessar fatura →</a>`;
+          pixDisplay.querySelector('.pix-sub').textContent =
+            'Clique no link abaixo para acessar sua fatura e realizar o pagamento.';
+          document.getElementById('pixCode').textContent = data.invoiceUrl;
+        } else {
+          pixDisplay.querySelector('.pix-sub').textContent =
+            'Pagamento solicitado com sucesso! Verifique seu e-mail para mais instruções.';
+          document.querySelector('.pix-qr').style.display = 'none';
+          document.querySelector('.pix-code-box').style.display = 'none';
+        }
+
+      } catch (err) {
+        showError('Erro de conexão. Verifique sua internet e tente novamente.');
+        btn.disabled = false;
+        btn.textContent = 'Quero começar agora →';
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('modalError');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    function copyPix() {
+      const code = document.getElementById('pixCode').textContent;
+      if (!code || code === 'carregando...') return;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('pixCopyBtn');
+        btn.textContent = 'Copiado!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    // ── NAV SHADOW ──
     window.addEventListener('scroll', () => {
       const nav = document.querySelector('nav');
       nav.style.boxShadow =
         window.scrollY > 20 ? '0 6px 24px rgba(0,0,0,.12)' : '0 4px 20px rgba(0,0,0,.08)';
     });
 
-    // Animate on scroll
+    // ── ANIMATE ON SCROLL ──
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {

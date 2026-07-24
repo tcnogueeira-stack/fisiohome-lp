@@ -92,12 +92,48 @@ serve(async (req) => {
       }),
     });
 
+    // 5. Buscar primeira cobrança para obter PIX
+    let pixQrCode = null;
+    let invoiceUrl = null;
+    try {
+      const paymentsRes = await fetch(`${ASAAS_URL}/subscriptions/${sub.id}/payments`, {
+        headers: ASAAS_HEADERS,
+      }).then(r => r.json());
+
+      const firstPayment = paymentsRes?.data?.[0];
+      if (firstPayment?.id) {
+        invoiceUrl = firstPayment.invoiceUrl || null;
+        if (firstPayment.pixQrCode) {
+          pixQrCode = {
+            encodedImage: firstPayment.pixQrCode.encodedImage,
+            payload: firstPayment.pixQrCode.payload,
+          };
+        } else {
+          // Se não veio no list, buscar detalhe da cobrança
+          const payDetail = await fetch(`${ASAAS_URL}/payments/${firstPayment.id}`, {
+            headers: ASAAS_HEADERS,
+          }).then(r => r.json());
+          if (payDetail.pixQrCode) {
+            pixQrCode = {
+              encodedImage: payDetail.pixQrCode.encodedImage,
+              payload: payDetail.pixQrCode.payload,
+            };
+          }
+          invoiceUrl = invoiceUrl || payDetail.invoiceUrl || null;
+        }
+      }
+    } catch {
+      // Non-critical: PIX data is optional
+    }
+
     return new Response(JSON.stringify({
       ok: true,
       subscriptionId: sub.id,
       customerId: cust.id,
       plan,
       value: p.value / 100,
+      pixQrCode,
+      invoiceUrl,
     }), { headers: { "Content-Type": "application/json" } });
 
   } catch (err) {
