@@ -2482,8 +2482,8 @@
           } else {
             pixDisplay.querySelector('.pix-sub').textContent =
               'Pagamento solicitado! Verifique seu e-mail.';
-            document.querySelector('.pix-qr')!.style.display = 'none';
-            document.querySelector('.pix-code-box')!.style.display = 'none';
+            const qrEl = document.querySelector('.pix-qr'); if (qrEl) qrEl.style.display = 'none';
+            const codeEl = document.querySelector('.pix-code-box'); if (codeEl) codeEl.style.display = 'none';
           }
         } else {
           // Cartão de crédito
