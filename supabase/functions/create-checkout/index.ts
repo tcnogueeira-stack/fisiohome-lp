@@ -54,7 +54,8 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, phone, cpfCnpj, plan } = await req.json();
+    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo } = await req.json();
+    const bt = billingType || "PIX";
     if (!name || !email || !plan) {
       return json({ error: "name, email e plan são obrigatórios" }, 400);
     }
@@ -77,41 +78,54 @@ serve(async (req) => {
 
     const customerId = Array.isArray(dbCust) ? dbCust[0]?.id : dbCust?.id;
 
-    // 3. Assinatura no Asaas
+    // 3. Montar payload da assinatura
     const p = PLANS[plan as keyof typeof PLANS];
     const dueDate = new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0];
+
+    const subPayload: Record<string, unknown> = {
+      customer: cust.id,
+      billingType: bt,
+      value: p.value / 100,
+      nextDueDate: dueDate,
+      cycle: p.cycle,
+      description: `FisioHome - ${p.desc}`,
+      maxPayments: p.max,
+    };
+
+    if (bt === "CREDIT_CARD" && creditCard) {
+      subPayload.creditCard = creditCard;
+      if (creditCardHolderInfo) {
+        subPayload.creditCardHolderInfo = creditCardHolderInfo;
+      }
+    }
+
     const sub = await fetch(`${ASAAS_URL}/subscriptions`, {
       method: "POST",
       headers: ASAAS_HEADERS,
-      body: JSON.stringify({
-        customer: cust.id,
-        billingType: "PIX",
-        value: p.value / 100,
-        nextDueDate: dueDate,
-        cycle: p.cycle,
-        description: `FisioHome - ${p.desc}`,
-        maxPayments: p.max,
-      }),
+      body: JSON.stringify(subPayload),
     }).then(r => r.json());
 
     if (!sub.id) throw new Error(`Erro assinatura Asaas: ${JSON.stringify(sub)}`);
 
     // 4. Salvar subscription no Supabase
+    const subStatus = bt === "CREDIT_CARD" ? "active" : "trial";
     await api("subscriptions", {
       method: "POST",
       body: JSON.stringify({
         customer_id: customerId,
         plan,
-        status: "trial",
+        status: subStatus,
         asaas_sub_id: sub.id,
         asaas_cust_id: cust.id,
-        trial_end: new Date(Date.now() + 7 * 86400000).toISOString(),
+        current_period_start: bt === "CREDIT_CARD" ? new Date().toISOString() : null,
+        trial_end: bt === "CREDIT_CARD" ? null : new Date(Date.now() + 7 * 86400000).toISOString(),
       }),
     });
 
-    // 5. Buscar primeira cobrança para obter PIX
+    // 5. Buscar primeira cobrança
     let pixQrCode = null;
     let invoiceUrl = null;
+    let paymentStatus = "pending";
     try {
       const paymentsRes = await fetch(`${ASAAS_URL}/subscriptions/${sub.id}/payments`, {
         headers: ASAAS_HEADERS,
@@ -119,6 +133,7 @@ serve(async (req) => {
 
       const firstPayment = paymentsRes?.data?.[0];
       if (firstPayment?.id) {
+        paymentStatus = firstPayment.status || "pending";
         invoiceUrl = firstPayment.invoiceUrl || null;
         if (firstPayment.pixQrCode) {
           pixQrCode = {
@@ -139,7 +154,7 @@ serve(async (req) => {
         }
       }
     } catch {
-      // Non-critical: PIX data is optional
+      // Non-critical
     }
 
     return json({
@@ -148,6 +163,9 @@ serve(async (req) => {
       customerId: cust.id,
       plan,
       value: p.value / 100,
+      billingType: bt,
+      status: subStatus,
+      paymentStatus,
       pixQrCode,
       invoiceUrl,
     });

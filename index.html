@@ -1578,6 +1578,90 @@
       display: block;
     }
 
+    /* ── PAYMENT METHOD TOGGLE ── */
+    .payment-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .payment-option {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--cream);
+      cursor: pointer;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--mid);
+      transition: .2s;
+    }
+
+    .payment-option:hover {
+      border-color: var(--gold-light);
+    }
+
+    .payment-option.active {
+      border-color: var(--green-mid);
+      background: var(--green-pale);
+      color: var(--green-deep);
+    }
+
+    .payment-option .pay-icon {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    /* ── CARD FIELDS ── */
+    .card-fields {
+      display: none;
+    }
+
+    .card-fields.visible {
+      display: block;
+    }
+
+    .card-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .card-row .modal-field {
+      flex: 1;
+    }
+
+    /* ── SUCCESS DISPLAY ── */
+    .success-display {
+      text-align: center;
+      display: none;
+    }
+
+    .success-display.visible {
+      display: block;
+    }
+
+    .success-display .success-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .success-display .success-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      color: var(--green-deep);
+      margin-bottom: 8px;
+    }
+
+    .success-display .success-sub {
+      font-size: .85rem;
+      color: var(--mid);
+      line-height: 1.7;
+    }
+
     /* ── PIX DISPLAY ── */
     .pix-display {
       text-align: center;
@@ -2116,6 +2200,49 @@
           <label for="fieldCpf">CPF / CNPJ</label>
           <input id="fieldCpf" type="text" placeholder="000.000.000-00">
         </div>
+
+        <!-- Payment method -->
+        <div class="payment-toggle">
+          <div class="payment-option active" data-method="PIX" onclick="selectPayment(this)">
+            <span class="pay-icon">⚡</span> PIX
+          </div>
+          <div class="payment-option" data-method="CREDIT_CARD" onclick="selectPayment(this)">
+            <span class="pay-icon">💳</span> Cartão de Crédito
+          </div>
+        </div>
+
+        <!-- Credit card fields -->
+        <div class="card-fields" id="cardFields">
+          <div class="modal-field">
+            <label for="fieldCardNumber">Número do cartão</label>
+            <input id="fieldCardNumber" type="text" placeholder="0000 0000 0000 0000" maxlength="19">
+          </div>
+          <div class="card-row">
+            <div class="modal-field">
+              <label for="fieldCardExpiry">Validade</label>
+              <input id="fieldCardExpiry" type="text" placeholder="MM/AA" maxlength="5">
+            </div>
+            <div class="modal-field">
+              <label for="fieldCardCvv">CVV</label>
+              <input id="fieldCardCvv" type="text" placeholder="123" maxlength="4">
+            </div>
+          </div>
+          <div class="modal-field">
+            <label for="fieldCardHolder">Nome no cartão</label>
+            <input id="fieldCardHolder" type="text" placeholder="Como está gravado no cartão">
+          </div>
+          <div class="card-row">
+            <div class="modal-field">
+              <label for="fieldCep">CEP</label>
+              <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9">
+            </div>
+            <div class="modal-field">
+              <label for="fieldAddressNum">Número</label>
+              <input id="fieldAddressNum" type="text" placeholder="Nº">
+            </div>
+          </div>
+        </div>
+
         <button class="modal-submit" id="modalSubmit" onclick="submitCheckout()">
           Quero começar agora →
         </button>
@@ -2131,6 +2258,15 @@
           <button class="pix-copy-btn" id="pixCopyBtn" onclick="copyPix()">Copiar</button>
         </div>
         <div class="pix-footer">Após o pagamento, seu acesso será liberado em até 2 minutos.</div>
+      </div>
+
+      <!-- Success display -->
+      <div class="success-display" id="successDisplay">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Assinatura confirmada!</div>
+        <div class="success-sub" id="successText">
+          Seu acesso já está sendo liberado. Você receberá um e-mail com as instruções em instantes.
+        </div>
       </div>
     </div>
   </div>
@@ -2203,6 +2339,7 @@
     };
 
     let selectedPlan = 'anual';
+    let selectedMethod = 'PIX';
 
     // ── FAQ ──
     function toggleFaq(btn) {
@@ -2215,15 +2352,23 @@
     // ── MODAL ──
     function openCheckout(plan) {
       selectedPlan = plan || 'anual';
+      selectedMethod = 'PIX';
       const p = PLANS[selectedPlan];
       document.getElementById('modalPlanName').textContent = p.label;
       document.getElementById('modalPlanPrice').textContent = p.price;
       document.getElementById('modalPlanPeriod').textContent = p.period;
       document.getElementById('checkoutForm').style.display = 'block';
       document.getElementById('pixDisplay').classList.remove('visible');
+      document.getElementById('successDisplay').classList.remove('visible');
+      document.getElementById('cardFields').classList.remove('visible');
       document.getElementById('modalError').classList.remove('visible');
       document.getElementById('modalSubmit').disabled = false;
+      document.getElementById('modalSubmit').style.display = 'block';
       document.getElementById('modalSubmit').textContent = 'Quero começar agora →';
+      // Reset payment toggle
+      document.querySelectorAll('.payment-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.method === 'PIX');
+      });
       document.getElementById('modalOverlay').classList.add('open');
       document.body.style.overflow = 'hidden';
     }
@@ -2238,6 +2383,14 @@
       if (e.target === this) closeCheckout();
     });
 
+    // ── PAYMENT METHOD ──
+    function selectPayment(el) {
+      document.querySelectorAll('.payment-option').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      selectedMethod = el.dataset.method;
+      document.getElementById('cardFields').classList.toggle('visible', selectedMethod === 'CREDIT_CARD');
+    }
+
     // ── SUBMIT ──
     async function submitCheckout() {
       const name = document.getElementById('fieldName').value.trim();
@@ -2251,6 +2404,46 @@
       if (!email) { showError('Informe seu e-mail.'); return; }
       if (!phone) { showError('Informe seu telefone.'); return; }
 
+      // Montar body
+      const body = {
+        name, email, phone, cpfCnpj,
+        plan: selectedPlan,
+        billingType: selectedMethod,
+      };
+
+      // Se cartão, validar e adicionar dados
+      if (selectedMethod === 'CREDIT_CARD') {
+        const cardNumber = document.getElementById('fieldCardNumber').value.trim().replace(/\s/g, '');
+        const cardExpiry = document.getElementById('fieldCardExpiry').value.trim();
+        const cardCvv = document.getElementById('fieldCardCvv').value.trim();
+        const cardHolder = document.getElementById('fieldCardHolder').value.trim();
+        const cep = document.getElementById('fieldCep').value.trim();
+        const addressNum = document.getElementById('fieldAddressNum').value.trim();
+
+        if (!cardNumber || cardNumber.length < 13) { showError('Informe um número de cartão válido.'); return; }
+        if (!cardExpiry || !cardExpiry.includes('/')) { showError('Informe a validade (MM/AA).'); return; }
+        if (!cardCvv || cardCvv.length < 3) { showError('Informe o CVV.'); return; }
+        if (!cardHolder) { showError('Informe o nome no cartão.'); return; }
+        if (!cep) { showError('Informe seu CEP.'); return; }
+
+        const [expiryMonth, expiryYear] = cardExpiry.split('/');
+        body.creditCard = {
+          holderName: cardHolder,
+          number: cardNumber,
+          expiryMonth,
+          expiryYear: expiryYear.length === 2 ? `20${expiryYear}` : expiryYear,
+          ccv: cardCvv,
+        };
+        body.creditCardHolderInfo = {
+          name: cardHolder,
+          email,
+          cpfCnpj,
+          postalCode: cep.replace(/\D/g, ''),
+          addressNumber: addressNum || 'S/N',
+          phone: phone.replace(/\D/g, ''),
+        };
+      }
+
       errorEl.classList.remove('visible');
       const btn = document.getElementById('modalSubmit');
       btn.disabled = true;
@@ -2260,7 +2453,7 @@
         const res = await fetch(ASAAS_CHECKOUT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, phone, cpfCnpj, plan: selectedPlan }),
+          body: JSON.stringify(body),
         });
         const data = await res.json();
 
@@ -2271,30 +2464,38 @@
           return;
         }
 
-        // Mostra PIX
         document.getElementById('checkoutForm').style.display = 'none';
-        const pixDisplay = document.getElementById('pixDisplay');
-        pixDisplay.classList.add('visible');
+        btn.style.display = 'none';
 
-        if (data.pixQrCode) {
-          // QR Code
-          const qrImg = document.querySelector('#pixQr img');
-          qrImg.src = `data:image/png;base64,${data.pixQrCode.encodedImage}`;
-          document.getElementById('pixCode').textContent = data.pixQrCode.payload;
-          pixDisplay.querySelector('.pix-sub').textContent =
-            'Escaneie o QR Code abaixo ou copie o código PIX para pagar';
-        } else if (data.invoiceUrl) {
-          // Fallback: link da fatura
-          pixDisplay.querySelector('.pix-qr').innerHTML =
-            `<a href="${data.invoiceUrl}" target="_blank" style="font-size:.85rem;color:var(--green-deep);font-weight:700;">Acessar fatura →</a>`;
-          pixDisplay.querySelector('.pix-sub').textContent =
-            'Clique no link abaixo para acessar sua fatura e realizar o pagamento.';
-          document.getElementById('pixCode').textContent = data.invoiceUrl;
+        if (selectedMethod === 'PIX') {
+          const pixDisplay = document.getElementById('pixDisplay');
+          pixDisplay.classList.add('visible');
+
+          if (data.pixQrCode) {
+            const qrImg = document.querySelector('#pixQr img');
+            qrImg.src = `data:image/png;base64,${data.pixQrCode.encodedImage}`;
+            document.getElementById('pixCode').textContent = data.pixQrCode.payload;
+          } else if (data.invoiceUrl) {
+            pixDisplay.querySelector('.pix-qr').innerHTML =
+              `<a href="${data.invoiceUrl}" target="_blank" style="font-size:.85rem;color:var(--green-deep);font-weight:700;">Acessar fatura →</a>`;
+            document.getElementById('pixCode').textContent = data.invoiceUrl;
+          } else {
+            pixDisplay.querySelector('.pix-sub').textContent =
+              'Pagamento solicitado! Verifique seu e-mail.';
+            document.querySelector('.pix-qr')!.style.display = 'none';
+            document.querySelector('.pix-code-box')!.style.display = 'none';
+          }
         } else {
-          pixDisplay.querySelector('.pix-sub').textContent =
-            'Pagamento solicitado com sucesso! Verifique seu e-mail para mais instruções.';
-          document.querySelector('.pix-qr').style.display = 'none';
-          document.querySelector('.pix-code-box').style.display = 'none';
+          // Cartão de crédito
+          const successDisplay = document.getElementById('successDisplay');
+          successDisplay.classList.add('visible');
+          if (data.status === 'active') {
+            document.getElementById('successText').textContent =
+              'Pagamento aprovado! Seu acesso já está liberado. Você receberá um e-mail de confirmação.';
+          } else {
+            document.getElementById('successText').textContent =
+              'Pagamento processado com sucesso! Seu acesso será liberado em instantes.';
+          }
         }
 
       } catch (err) {
