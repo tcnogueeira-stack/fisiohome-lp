@@ -605,18 +605,6 @@
             <input id="fieldCardHolder" type="text" placeholder="Como está gravado no cartão">
             <div class="field-error" id="feCardHolder"></div>
           </div>
-          <div class="field-row">
-            <div class="field-group" id="fgCep">
-              <label for="fieldCep">CEP</label>
-              <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9" oninput="maskCep(this)">
-              <div class="field-error" id="feCep"></div>
-            </div>
-            <div class="field-group" id="fgAddressNum">
-              <label for="fieldAddressNum">Número</label>
-              <input id="fieldAddressNum" type="text" placeholder="Nº">
-              <div class="field-error" id="feAddressNum"></div>
-            </div>
-          </div>
         </div>
 
         <button class="btn-submit" id="btnSubmit" onclick="submitCheckout()">
@@ -836,20 +824,17 @@
         const cardExpiry = document.getElementById('fieldCardExpiry').value.trim();
         const cardCvv = document.getElementById('fieldCardCvv').value.trim();
         const cardHolder = document.getElementById('fieldCardHolder').value.trim();
-        const cep = document.getElementById('fieldCep').value.trim();
-        const addressNum = document.getElementById('fieldAddressNum').value.trim();
 
         if (!cardNumber || cardNumber.length < 13) { showFieldError('CardNumber', 'Número de cartão inválido.'); hasError = true; }
         if (!cardExpiry || !cardExpiry.includes('/')) { showFieldError('CardExpiry', 'Informe MM/AA.'); hasError = true; }
         if (!cardCvv || cardCvv.length < 3) { showFieldError('CardCvv', 'CVV inválido.'); hasError = true; }
         if (!cardHolder) { showFieldError('CardHolder', 'Informe o nome no cartão.'); hasError = true; }
-        if (!cep || cep.replace(/\D/g, '').length < 8) { showFieldError('Cep', 'Informe um CEP válido.'); hasError = true; }
 
         if (hasError) return;
 
         const [expiryMonth, expiryYear] = cardExpiry.split('/');
         body.creditCard = { holderName: cardHolder, number: cardNumber, expiryMonth, expiryYear: expiryYear.length === 2 ? `20${expiryYear}` : expiryYear, ccv: cardCvv };
-        body.creditCardHolderInfo = { name: cardHolder, email, cpfCnpj, postalCode: cep.replace(/\D/g, ''), addressNumber: addressNum || 'S/N', phone: phone.replace(/\D/g, '') };
+        body.creditCardHolderInfo = { name: cardHolder, email, cpfCnpj, phone: phone.replace(/\D/g, '') };
       } else if (hasError) return;
 
       const btn = document.getElementById('btnSubmit');
