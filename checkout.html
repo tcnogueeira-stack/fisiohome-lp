@@ -208,7 +208,7 @@
 
     .payment-option:hover { border-color: var(--gold-light); }
     .payment-option.active { border-color: var(--green-mid); background: var(--green-pale); color: var(--green-deep); }
-    .payment-option .pay-icon { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+    .payment-option .pay-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
 
     /* ── CARD FIELDS ── */
     .card-fields { display: none; }
@@ -513,7 +513,12 @@
 
         <div class="payment-toggle">
           <div class="payment-option active" data-method="PIX" onclick="selectPayment(this)">
-            <span class="pay-icon">⚡</span> PIX
+            <span class="pay-icon">
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="6" fill="#00A4DB"/>
+                <path d="M22.5 11.5L16 18l-3.5-3.5L16 11l6.5 6.5m-13 0L16 11l3.5 3.5L16 18l-6.5-6.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span> PIX
           </div>
           <div class="payment-option" data-method="CREDIT_CARD" onclick="selectPayment(this)">
             <span class="pay-icon">💳</span> Cartão de Crédito

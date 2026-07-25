@@ -1611,8 +1611,9 @@
     }
 
     .payment-option .pay-icon {
-      display: block;
-      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 4px;
     }
 
@@ -2250,7 +2251,12 @@
         <!-- Payment method -->
         <div class="payment-toggle">
           <div class="payment-option active" data-method="PIX" onclick="selectPayment(this)">
-            <span class="pay-icon">⚡</span> PIX
+            <span class="pay-icon">
+              <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="6" fill="#00A4DB"/>
+                <path d="M22.5 11.5L16 18l-3.5-3.5L16 11l6.5 6.5m-13 0L16 11l3.5 3.5L16 18l-6.5-6.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span> PIX
           </div>
           <div class="payment-option" data-method="CREDIT_CARD" onclick="selectPayment(this)">
             <span class="pay-icon">💳</span> Cartão de Crédito
