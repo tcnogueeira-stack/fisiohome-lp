@@ -54,7 +54,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo } = await req.json();
+    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo, installmentCount } = await req.json();
     const bt = billingType || "PIX";
     if (!name || !email || !plan) {
       return json({ error: "name, email e plan são obrigatórios" }, 400);
@@ -96,6 +96,9 @@ serve(async (req) => {
       subPayload.creditCard = creditCard;
       if (creditCardHolderInfo) {
         subPayload.creditCardHolderInfo = creditCardHolderInfo;
+      }
+      if (installmentCount && installmentCount > 1) {
+        subPayload.installmentCount = installmentCount;
       }
     }
 

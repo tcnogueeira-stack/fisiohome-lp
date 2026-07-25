@@ -211,6 +211,43 @@
     .payment-option.active { border-color: var(--green-mid); background: var(--green-pale); color: var(--green-deep); }
     .payment-option .pay-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
 
+    /* ── INSTALLMENTS ── */
+    .installment-section { margin-bottom: 16px; }
+
+    .installment-section > label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 8px;
+    }
+
+    .installment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 6px;
+    }
+
+    .installment-opt {
+      padding: 8px 6px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--cream);
+      cursor: pointer;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--mid);
+      transition: .15s;
+      line-height: 1.3;
+    }
+
+    .installment-opt:hover { border-color: var(--gold-light); }
+    .installment-opt.active { border-color: var(--green-mid); background: var(--green-pale); color: var(--green-deep); }
+    .installment-opt .inst-num { display: block; font-size: .85rem; font-weight: 800; }
+    .installment-opt .inst-val { display: block; font-size: .65rem; opacity: .8; }
+
     /* ── CARD FIELDS ── */
     .card-fields { display: none; }
     .card-fields.visible { display: block; }
@@ -537,6 +574,10 @@
         </div>
 
         <div class="card-fields" id="cardFields">
+          <div class="installment-section">
+            <label>Número de parcelas</label>
+            <div class="installment-grid" id="installmentGrid"></div>
+          </div>
           <div class="field-group" id="fgCardNumber">
             <label for="fieldCardNumber">Número do cartão</label>
             <input id="fieldCardNumber" type="text" placeholder="0000 0000 0000 0000" maxlength="19" oninput="maskCardNumber(this)">
@@ -657,13 +698,14 @@
     const ASAAS_CHECKOUT_URL = 'https://alwwhsckljdmwcodnnti.supabase.co/functions/v1/clever-api';
 
     const PLANS = {
-      mensal:    { label: 'Mensal',    price: 'R$ 47,90', period: '/mês', value: 4790, desc: 'Mensal',        installments: 1,  installmentLabel: '1x de R$ 47,90', total: 'R$ 47,90' },
-      semestral: { label: 'Semestral', price: 'R$ 39,90', period: '/mês', value: 23940, desc: 'Semestral',     installments: 6,  installmentLabel: '6x de R$ 39,90', total: 'R$ 239,40' },
-      anual:     { label: 'Anual',     price: 'R$ 29,90', period: '/mês', value: 35880, desc: 'Anual',         installments: 12, installmentLabel: '12x de R$ 29,90', total: 'R$ 358,80' },
+      mensal:    { label: 'Mensal',    price: 'R$ 47,90', period: '/mês', value: 4790, desc: 'Mensal',        maxInst: 1,  total: 'R$ 47,90', totalNum: 47.90 },
+      semestral: { label: 'Semestral', price: 'R$ 39,90', period: '/mês', value: 23940, desc: 'Semestral',     maxInst: 6,  total: 'R$ 239,40', totalNum: 239.40 },
+      anual:     { label: 'Anual',     price: 'R$ 29,90', period: '/mês', value: 35880, desc: 'Anual',         maxInst: 12, total: 'R$ 358,80', totalNum: 358.80 },
     };
 
     let selectedPlan = 'anual';
     let selectedMethod = 'PIX';
+    let selectedInstallment = 1;
 
     // ── Ler plano da URL ──
     function getPlanFromUrl() {
@@ -672,15 +714,52 @@
       if (plan && PLANS[plan]) selectedPlan = plan;
     }
 
+    // ── Gerar parcelas ──
+    function getInstallments(plan) {
+      const p = PLANS[plan];
+      const inst = [];
+      for (let i = 1; i <= p.maxInst; i++) {
+        const val = p.totalNum / i;
+        inst.push({ count: i, value: val, label: `${i}x de R$ ${val.toFixed(2).replace('.', ',')}` });
+      }
+      return inst;
+    }
+
+    function renderInstallments() {
+      const grid = document.getElementById('installmentGrid');
+      const inst = getInstallments(selectedPlan);
+      selectedInstallment = inst.length;
+      grid.innerHTML = '';
+      inst.forEach((opt, idx) => {
+        const el = document.createElement('div');
+        el.className = 'installment-opt' + (idx === inst.length - 1 ? ' active' : '');
+        el.dataset.count = opt.count;
+        el.innerHTML = `<span class="inst-num">${opt.count}x</span><span class="inst-val">R$ ${opt.value.toFixed(2).replace('.', ',')}</span>`;
+        el.onclick = function () { selectInstallment(this); };
+        grid.appendChild(el);
+      });
+      updateSummary();
+    }
+
+    function selectInstallment(el) {
+      document.querySelectorAll('.installment-opt').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      selectedInstallment = parseInt(el.dataset.count);
+      updateSummary();
+    }
+
     // ── Atualizar resumo ──
     function updateSummary() {
       const p = PLANS[selectedPlan];
+      const inst = getInstallments(selectedPlan);
       document.getElementById('summaryPlanName').textContent = `Plano ${p.label}`;
-      document.getElementById('summaryPlanDesc').textContent = p.installmentLabel;
       document.getElementById('summaryPrice').textContent = p.price.replace('R$ ', '');
-      document.getElementById('installmentCount').textContent = `${p.installments}x`;
-      document.getElementById('installmentValue').textContent = p.price;
       document.getElementById('summaryTotal').textContent = p.total;
+
+      const sel = inst.find(i => i.count === selectedInstallment) || inst[inst.length - 1];
+      document.getElementById('summaryPlanDesc').textContent = sel.label;
+      document.getElementById('installmentCount').textContent = `${sel.count}x`;
+      document.getElementById('installmentValue').textContent = `R$ ${sel.value.toFixed(2).replace('.', ',')}`;
     }
 
     // ── INPUT MASKS ──
@@ -739,7 +818,9 @@
       document.querySelectorAll('.payment-option').forEach(e => e.classList.remove('active'));
       el.classList.add('active');
       selectedMethod = el.dataset.method;
-      document.getElementById('cardFields').classList.toggle('visible', selectedMethod === 'CREDIT_CARD');
+      const showCard = selectedMethod === 'CREDIT_CARD';
+      document.getElementById('cardFields').classList.toggle('visible', showCard);
+      if (showCard) renderInstallments();
     }
 
     // ── SUBMIT ──
@@ -756,7 +837,7 @@
       if (!email) { showFieldError('Email', 'Informe seu e-mail.'); hasError = true; }
       if (!phone || phone.replace(/\D/g, '').length < 10) { showFieldError('Phone', 'Informe um telefone válido.'); hasError = true; }
 
-      const body = { name, email, phone, cpfCnpj, plan: selectedPlan, billingType: selectedMethod };
+      const body = { name, email, phone, cpfCnpj, plan: selectedPlan, billingType: selectedMethod, installmentCount: selectedInstallment };
 
       if (selectedMethod === 'CREDIT_CARD') {
         const cardNumber = document.getElementById('fieldCardNumber').value.trim().replace(/\s/g, '');
