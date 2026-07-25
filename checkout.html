@@ -71,9 +71,10 @@
       grid-template-columns: 1fr 380px;
       max-width: 960px;
       margin: 0 auto;
-      padding: 40px 5%;
+      padding: 24px 5% 40px;
       gap: 36px;
       width: 100%;
+      align-items: start;
     }
 
     @media(max-width: 800px) {
@@ -237,6 +238,13 @@
 
     .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(10, 92, 82, .4); }
     .btn-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .checkout-header {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 5% 0;
+      width: 100%;
+    }
 
     .btn-submit .spinner {
       display: none;
@@ -468,14 +476,17 @@
     <div class="nav-secure">🔒 Pagamento 100% seguro</div>
   </nav>
 
+  <!-- CHECKOUT HEADER -->
+  <div class="checkout-header">
+    <h1 class="checkout-title">Finalizar assinatura</h1>
+    <p class="checkout-sub">Preencha seus dados e escolha a forma de pagamento.</p>
+  </div>
+
   <!-- CHECKOUT -->
   <div class="checkout-wrap">
 
     <!-- FORM -->
     <div class="checkout-form" id="checkoutForm">
-      <h1 class="checkout-title">Finalizar assinatura</h1>
-      <p class="checkout-sub">Preencha seus dados e escolha a forma de pagamento.</p>
-
       <div class="error-box" id="errorBox"></div>
 
       <!-- Step 1: Dados pessoais -->
