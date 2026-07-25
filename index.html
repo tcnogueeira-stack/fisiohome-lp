@@ -2247,6 +2247,11 @@
           <input id="fieldCpf" type="text" placeholder="000.000.000-00" oninput="maskCpf(this)">
           <div class="field-error" id="fieldErrorCpf"></div>
         </div>
+        <div class="modal-field" id="fieldGroupCep">
+          <label for="fieldCep">CEP</label>
+          <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9" oninput="maskCep(this)">
+          <div class="field-error" id="fieldErrorCep"></div>
+        </div>
 
         <!-- Payment method -->
         <div class="payment-toggle">
@@ -2286,11 +2291,6 @@
             <label for="fieldCardHolder">Nome no cartão</label>
             <input id="fieldCardHolder" type="text" placeholder="Como está gravado no cartão">
             <div class="field-error" id="fieldErrorCardHolder"></div>
-          </div>
-          <div class="modal-field" id="fieldGroupCep">
-            <label for="fieldCep">CEP</label>
-            <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9" oninput="maskCep(this)">
-            <div class="field-error" id="fieldErrorCep"></div>
           </div>
         </div>
 

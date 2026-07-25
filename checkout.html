@@ -556,6 +556,11 @@
           <input id="fieldCpf" type="text" placeholder="000.000.000-00" oninput="maskCpf(this)">
           <div class="field-error" id="feCpf"></div>
         </div>
+        <div class="field-group" id="fgCep">
+          <label for="fieldCep">CEP</label>
+          <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9" oninput="maskCep(this)">
+          <div class="field-error" id="feCep"></div>
+        </div>
       </div>
 
       <!-- Step 2: Pagamento -->
@@ -604,11 +609,6 @@
             <label for="fieldCardHolder">Nome no cartão</label>
             <input id="fieldCardHolder" type="text" placeholder="Como está gravado no cartão">
             <div class="field-error" id="feCardHolder"></div>
-          </div>
-          <div class="field-group" id="fgCep">
-            <label for="fieldCep">CEP</label>
-            <input id="fieldCep" type="text" placeholder="00000-000" maxlength="9" oninput="maskCep(this)">
-            <div class="field-error" id="feCep"></div>
           </div>
         </div>
 
