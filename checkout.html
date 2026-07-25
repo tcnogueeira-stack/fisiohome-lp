@@ -214,39 +214,32 @@
     /* ── INSTALLMENTS ── */
     .installment-section { margin-bottom: 16px; }
 
-    .installment-section > label {
+    .installment-section label {
       display: block;
       font-size: .78rem;
       font-weight: 700;
       color: var(--charcoal);
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
 
-    .installment-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 6px;
-    }
-
-    .installment-opt {
-      padding: 8px 6px;
-      border-radius: 8px;
+    .installment-section select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
       border: 1.5px solid var(--border);
+      font-family: 'Nunito', sans-serif;
+      font-size: .9rem;
+      color: var(--charcoal);
       background: var(--cream);
       cursor: pointer;
-      text-align: center;
-      font-family: 'Nunito', sans-serif;
-      font-size: .72rem;
-      font-weight: 600;
-      color: var(--mid);
-      transition: .15s;
-      line-height: 1.3;
+      outline: none;
+      appearance: auto;
     }
 
-    .installment-opt:hover { border-color: var(--gold-light); }
-    .installment-opt.active { border-color: var(--green-mid); background: var(--green-pale); color: var(--green-deep); }
-    .installment-opt .inst-num { display: block; font-size: .85rem; font-weight: 800; }
-    .installment-opt .inst-val { display: block; font-size: .65rem; opacity: .8; }
+    .installment-section select:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(19, 160, 144, .12);
+    }
 
     /* ── CARD FIELDS ── */
     .card-fields { display: none; }
@@ -575,8 +568,8 @@
 
         <div class="card-fields" id="cardFields">
           <div class="installment-section">
-            <label>Número de parcelas</label>
-            <div class="installment-grid" id="installmentGrid"></div>
+            <label for="fieldInstallments">Número de parcelas</label>
+            <select id="fieldInstallments" onchange="onInstallmentChange(this)"></select>
           </div>
           <div class="field-group" id="fgCardNumber">
             <label for="fieldCardNumber">Número do cartão</label>
@@ -726,25 +719,22 @@
     }
 
     function renderInstallments() {
-      const grid = document.getElementById('installmentGrid');
+      const sel = document.getElementById('fieldInstallments');
       const inst = getInstallments(selectedPlan);
       selectedInstallment = inst.length;
-      grid.innerHTML = '';
-      inst.forEach((opt, idx) => {
-        const el = document.createElement('div');
-        el.className = 'installment-opt' + (idx === inst.length - 1 ? ' active' : '');
-        el.dataset.count = opt.count;
-        el.innerHTML = `<span class="inst-num">${opt.count}x</span><span class="inst-val">R$ ${opt.value.toFixed(2).replace('.', ',')}</span>`;
-        el.onclick = function () { selectInstallment(this); };
-        grid.appendChild(el);
+      sel.innerHTML = '';
+      inst.forEach(opt => {
+        const optEl = document.createElement('option');
+        optEl.value = opt.count;
+        optEl.textContent = `${opt.count}x de R$ ${opt.value.toFixed(2).replace('.', ',')}`;
+        if (opt.count === inst.length) optEl.selected = true;
+        sel.appendChild(optEl);
       });
       updateSummary();
     }
 
-    function selectInstallment(el) {
-      document.querySelectorAll('.installment-opt').forEach(e => e.classList.remove('active'));
-      el.classList.add('active');
-      selectedInstallment = parseInt(el.dataset.count);
+    function onInstallmentChange(el) {
+      selectedInstallment = parseInt(el.value);
       updateSummary();
     }
 
