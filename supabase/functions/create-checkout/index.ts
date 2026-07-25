@@ -78,7 +78,7 @@ serve(async (req) => {
     const cust = await fetch(`${ASAAS_URL}/customers`, {
       method: "POST",
       headers: ASAAS_HEADERS,
-      body: JSON.stringify({ name, email, phone, cpfCnpj, notificationDisabled: false }),
+      body: JSON.stringify({ name, email, mobilePhone: phone, cpfCnpj, notificationDisabled: false }),
     }).then(r => r.json());
 
     if (!cust.id) throw new Error(`Erro Asaas: ${JSON.stringify(cust)}`);
