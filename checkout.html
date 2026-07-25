@@ -878,12 +878,11 @@
           if (data.pixQrCode) {
             document.querySelector('#pixQr img').src = `data:image/png;base64,${data.pixQrCode.encodedImage}`;
             document.getElementById('pixCode').textContent = data.pixQrCode.payload;
-          } else if (data.invoiceUrl) {
-            pixDisplay.querySelector('.pix-qr').innerHTML = `<a href="${data.invoiceUrl}" target="_blank" style="font-size:.85rem;color:var(--green-deep);font-weight:700;">Acessar fatura →</a>`;
-            document.getElementById('pixCode').textContent = data.invoiceUrl;
           } else {
-            pixDisplay.querySelector('.pix-sub').textContent = 'Pagamento solicitado! Verifique seu e-mail.';
+            pixDisplay.querySelector('.pix-qr').innerHTML = '<p style="color:var(--mid)">Gerando QR Code... atualize a página em instantes.</p>';
+            document.getElementById('pixCode').textContent = data.invoiceUrl || 'Processando...';
           }
+          startPixPolling(data.subscriptionId);
         } else {
           const successDisplay = document.getElementById('successDisplay');
           successDisplay.classList.add('visible');
@@ -899,6 +898,35 @@
         btn.disabled = false;
         btn.classList.remove('loading');
       }
+    }
+
+    let pixPollTimer = null;
+
+    function showPixSuccess() {
+      if (pixPollTimer) { clearInterval(pixPollTimer); pixPollTimer = null; }
+      document.getElementById('pixDisplay').classList.remove('visible');
+      document.getElementById('successDisplay').classList.add('visible');
+      document.getElementById('successText').textContent = 'Pagamento confirmado! Seu acesso já está liberado.';
+    }
+
+    async function checkPixStatus(subId) {
+      try {
+        const res = await fetch(ASAAS_CHECKOUT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'checkStatus', subscriptionId: subId }),
+        });
+        const data = await res.json();
+        if (data.status === 'RECEIVED' || data.status === 'CONFIRMED' || data.status === 'active') {
+          showPixSuccess();
+        }
+      } catch {}
+    }
+
+    function startPixPolling(subId) {
+      if (!subId) return;
+      checkPixStatus(subId);
+      pixPollTimer = setInterval(() => checkPixStatus(subId), 5000);
     }
 
     function copyPix() {

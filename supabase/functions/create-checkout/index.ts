@@ -54,7 +54,21 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo, installmentCount } = await req.json();
+    const body = await req.json();
+    const { action } = body;
+
+    // ── checkStatus: polling de pagamento ──
+    if (action === "checkStatus") {
+      const { subscriptionId } = body;
+      if (!subscriptionId) return json({ error: "subscriptionId obrigatório" }, 400);
+      const paymentsRes = await fetch(`${ASAAS_URL}/subscriptions/${subscriptionId}/payments`, {
+        headers: ASAAS_HEADERS,
+      }).then(r => r.json());
+      const firstPayment = paymentsRes?.data?.[0];
+      return json({ status: firstPayment?.status || "pending", invoiceUrl: firstPayment?.invoiceUrl || null });
+    }
+
+    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo, installmentCount } = body;
     const bt = billingType || "PIX";
     if (!name || !email || !plan) {
       return json({ error: "name, email e plan são obrigatórios" }, 400);
@@ -138,22 +152,15 @@ serve(async (req) => {
       if (firstPayment?.id) {
         paymentStatus = firstPayment.status || "pending";
         invoiceUrl = firstPayment.invoiceUrl || null;
-        if (firstPayment.pixQrCode) {
-          pixQrCode = {
-            encodedImage: firstPayment.pixQrCode.encodedImage,
-            payload: firstPayment.pixQrCode.payload,
-          };
-        } else {
-          const payDetail = await fetch(`${ASAAS_URL}/payments/${firstPayment.id}`, {
+        if (bt === "PIX") {
+          const qrRes = await fetch(`${ASAAS_URL}/payments/${firstPayment.id}/pixQrCode`, {
             headers: ASAAS_HEADERS,
           }).then(r => r.json());
-          if (payDetail.pixQrCode) {
-            pixQrCode = {
-              encodedImage: payDetail.pixQrCode.encodedImage,
-              payload: payDetail.pixQrCode.payload,
-            };
+          if (qrRes.success && qrRes.encodedImage) {
+            pixQrCode = { encodedImage: qrRes.encodedImage, payload: qrRes.payload };
           }
-          invoiceUrl = invoiceUrl || payDetail.invoiceUrl || null;
+        } else {
+          if (firstPayment.invoiceUrl) invoiceUrl = firstPayment.invoiceUrl;
         }
       }
     } catch {
