@@ -211,6 +211,65 @@
     .payment-option.active { border-color: var(--green-mid); background: var(--green-pale); color: var(--green-deep); }
     .payment-option .pay-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
 
+    /* ── PLAN PICKER ── */
+    .plan-picker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .plan-option {
+      position: relative;
+      border: 1.5px solid var(--border);
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 14px 10px;
+      font-family: 'Nunito', sans-serif;
+      text-align: center;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .plan-option:hover { border-color: var(--gold-light); }
+    .plan-option.active { border-color: var(--green-mid); background: var(--green-pale); }
+
+    .plan-option-name {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+
+    .plan-option-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      color: var(--green-deep);
+      margin-top: 2px;
+    }
+
+    .plan-option-price sup { font-size: .6rem; }
+    .plan-option-price sub { font-size: .7rem; color: var(--soft); }
+
+    .plan-option-badge {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: var(--charcoal);
+      font-size: .58rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: .03em;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    @media(max-width: 480px) {
+      .plan-picker { grid-template-columns: 1fr; }
+    }
+
     /* ── INSTALLMENTS ── */
     .installment-section { margin-bottom: 16px; }
 
@@ -534,10 +593,32 @@
     <div class="checkout-form" id="checkoutForm">
       <div class="error-box" id="errorBox"></div>
 
+      <!-- Step 0: Escolha do plano -->
+      <div class="checkout-card">
+        <div class="checkout-card-title">
+          <span class="step-badge">1</span> Escolha seu plano
+        </div>
+        <div class="plan-picker">
+          <button type="button" class="plan-option" data-plan="mensal" onclick="selectPlan(this)">
+            <div class="plan-option-name">Mensal</div>
+            <div class="plan-option-price"><sup>R$</sup>47,90<sub>/mês</sub></div>
+          </button>
+          <button type="button" class="plan-option" data-plan="semestral" onclick="selectPlan(this)">
+            <div class="plan-option-name">Semestral</div>
+            <div class="plan-option-price"><sup>R$</sup>39,90<sub>/mês</sub></div>
+          </button>
+          <button type="button" class="plan-option highlight" data-plan="anual" onclick="selectPlan(this)">
+            <div class="plan-option-badge">MAIS ESCOLHIDO</div>
+            <div class="plan-option-name">Anual</div>
+            <div class="plan-option-price"><sup>R$</sup>29,90<sub>/mês</sub></div>
+          </button>
+        </div>
+      </div>
+
       <!-- Step 1: Dados pessoais -->
       <div class="checkout-card">
         <div class="checkout-card-title">
-          <span class="step-badge">1</span> Dados pessoais
+          <span class="step-badge">2</span> Dados pessoais
         </div>
         <div class="field-group" id="fgName">
           <label for="fieldName">Nome completo</label>
@@ -570,7 +651,7 @@
       <!-- Step 2: Pagamento -->
       <div class="checkout-card">
         <div class="checkout-card-title">
-          <span class="step-badge">2</span> Forma de pagamento
+          <span class="step-badge">3</span> Forma de pagamento
         </div>
 
         <div class="payment-toggle">
@@ -706,6 +787,19 @@
       const params = new URLSearchParams(window.location.search);
       const plan = params.get('plan');
       if (plan && PLANS[plan]) selectedPlan = plan;
+    }
+
+    // ── Selecionar plano (trocas sem sair da página) ──
+    function selectPlan(el) {
+      const key = el.dataset.plan;
+      if (!key || !PLANS[key]) return;
+      selectedPlan = key;
+      document.querySelectorAll('.plan-option').forEach(o => o.classList.toggle('active', o === el));
+      if (selectedMethod === 'CREDIT_CARD' || document.getElementById('cardFields').classList.contains('visible')) {
+        renderInstallments();
+      } else {
+        updateSummary();
+      }
     }
 
     // ── Gerar parcelas ──
@@ -949,6 +1043,7 @@
 
     // ── Init ──
     getPlanFromUrl();
+    document.querySelectorAll('.plan-option').forEach(o => o.classList.toggle('active', o.dataset.plan === selectedPlan));
     updateSummary();
   </script>
 </body>
