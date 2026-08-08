@@ -1,0 +1,10 @@
+project_id = "alwwhsckljdmwcodnnti"
+
+[functions.bright-responder]
+verify_jwt = false
+
+[functions.clever-api]
+verify_jwt = false
+
+[functions.activator]
+verify_jwt = true
