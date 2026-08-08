@@ -83,8 +83,8 @@ serve(async (req) => {
 
     if (!cust.id) throw new Error(`Erro Asaas: ${JSON.stringify(cust)}`);
 
-    // 2. Salvar customer no Supabase
-    const dbCust = await api("customers", {
+    // 2. Salvar customer no Supabase (users = dados do Asaas + assinatura)
+    const dbCust = await api("users", {
       method: "POST",
       headers: { "Prefer": "return=representation" },
       body: JSON.stringify({ name, email, phone, cpf_cnpj: cpfCnpj }),
@@ -124,12 +124,11 @@ serve(async (req) => {
 
     if (!sub.id) throw new Error(`Erro assinatura Asaas: ${JSON.stringify(sub)}`);
 
-    // 4. Salvar subscription no Supabase
+    // 4. Atualizar `users` com os dados da assinatura no Asaas
     const subStatus = bt === "CREDIT_CARD" ? "active" : "trial";
-    await api("subscriptions", {
-      method: "POST",
+    await api(`users?id=eq.${customerId}`, {
+      method: "PATCH",
       body: JSON.stringify({
-        customer_id: customerId,
         plan,
         status: subStatus,
         asaas_sub_id: sub.id,
