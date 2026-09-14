@@ -5,10 +5,84 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FisioHome — Prontuário Digital para Fisioterapeutas</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'Cormorant Garamond';
+      font-style: italic;
+      font-weight: 400;
+      font-display: swap;
+      src: url(fonts/cormorant-garamond-italic.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Cormorant Garamond';
+      font-style: italic;
+      font-weight: 600;
+      font-display: swap;
+      src: url(fonts/cormorant-garamond-italic.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Cormorant Garamond';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url(fonts/cormorant-garamond-normal.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Cormorant Garamond';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url(fonts/cormorant-garamond-normal.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Cormorant Garamond';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url(fonts/cormorant-garamond-normal.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-style: normal;
+      font-weight: 300;
+      font-display: swap;
+      src: url(fonts/nunito-latin.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url(fonts/nunito-latin.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url(fonts/nunito-latin.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url(fonts/nunito-latin.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url(fonts/nunito-latin.woff2) format('woff2');
+    }
+    @font-face {
+      font-family: 'Nunito';
+      font-style: normal;
+      font-weight: 800;
+      font-display: swap;
+      src: url(fonts/nunito-latin.woff2) format('woff2');
+    }
     :root {
       --green-deep: #0a5c52;
       --green-mid: #0d7a6d;
@@ -82,7 +156,6 @@
       border: none;
       border-radius: 50px;
       padding: 10px 22px;
-      font-family: 'Nunito', sans-serif;
       font-size: .85rem;
       font-weight: 700;
       cursor: pointer;
@@ -171,29 +244,6 @@
       text-align: left;
     }
 
-    .hero-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(212, 184, 150, .15);
-      border: 1px solid rgba(212, 184, 150, .3);
-      border-radius: 50px;
-      padding: 7px 16px;
-      margin-bottom: 24px;
-      font-size: .75rem;
-      font-weight: 700;
-      color: var(--gold-light);
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      animation: fadeUp .6s ease both;
-    }
-
-    .hero-pill::before {
-      content: '✦';
-      color: var(--gold);
-      font-size: .7rem;
-    }
-
     .hero-title {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(2.4rem, 6vw, 3.8rem);
@@ -230,7 +280,6 @@
     .btn-hero {
       padding: 15px 32px;
       border-radius: 50px;
-      font-family: 'Nunito', sans-serif;
       font-size: .95rem;
       font-weight: 800;
       cursor: pointer;
@@ -249,17 +298,6 @@
     .btn-hero-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 32px rgba(212, 184, 150, .55);
-    }
-
-    .btn-hero-secondary {
-      background: transparent;
-      color: #fff;
-      border: 1.5px solid rgba(255, 255, 255, .3);
-    }
-
-    .btn-hero-secondary:hover {
-      border-color: var(--gold-light);
-      color: var(--gold-light);
     }
 
     /* ── IPHONE MOCKUP ── */
@@ -467,11 +505,6 @@
       display: flex;
       gap: 3px;
       align-items: center;
-    }
-
-    .mock-icon {
-      font-size: .45rem;
-      color: var(--charcoal);
     }
 
     /* conteúdo do app dentro da tela */
@@ -1109,7 +1142,6 @@
       padding: 14px;
       border-radius: 50px;
       border: none;
-      font-family: 'Nunito', sans-serif;
       font-size: .9rem;
       font-weight: 800;
       cursor: pointer;
@@ -1194,7 +1226,6 @@
       background: none;
       border: none;
       cursor: pointer;
-      font-family: 'Nunito', sans-serif;
       font-size: .95rem;
       font-weight: 700;
       color: var(--charcoal);
@@ -1375,13 +1406,7 @@
 
     /* ── FOOTER APRIMORADO ── */
     footer {
-      background: var(--charcoal);
       padding: 48px 5% 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      text-align: center;
     }
 
     .footer-links {
@@ -1523,7 +1548,6 @@
       padding: 12px 14px;
       border-radius: 12px;
       border: 1.5px solid var(--border);
-      font-family: 'Nunito', sans-serif;
       font-size: .9rem;
       color: var(--charcoal);
       background: var(--cream);
@@ -1546,7 +1570,6 @@
       padding: 14px;
       border-radius: 50px;
       border: none;
-      font-family: 'Nunito', sans-serif;
       font-size: .95rem;
       font-weight: 800;
       cursor: pointer;
@@ -1597,7 +1620,6 @@
       background: var(--cream);
       cursor: pointer;
       text-align: center;
-      font-family: 'Nunito', sans-serif;
       font-size: .82rem;
       font-weight: 700;
       color: var(--mid);
@@ -1780,7 +1802,6 @@
       padding: 8px 14px;
       border-radius: 8px;
       border: none;
-      font-family: 'Nunito', sans-serif;
       font-size: .72rem;
       font-weight: 700;
       cursor: pointer;
