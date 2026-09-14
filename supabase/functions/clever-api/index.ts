@@ -178,16 +178,15 @@ serve(async (req) => {
     if (!sub.id) throw new Error(`Erro assinatura Asaas: ${JSON.stringify(sub)}`);
 
     // 4. Atualizar `users` com os dados da assinatura no Asaas
-    const subStatus = bt === "CREDIT_CARD" ? "active" : "trial";
     await api(`users?id=eq.${customerId}`, {
       method: "PATCH",
       body: JSON.stringify({
         plan,
-        status: subStatus,
+        status: "active",
         asaas_sub_id: sub.id,
         asaas_cust_id: cust.id,
-        current_period_start: bt === "CREDIT_CARD" ? new Date().toISOString() : null,
-        trial_end: bt === "CREDIT_CARD" ? null : new Date(Date.now() + 7 * 86400000).toISOString(),
+        current_period_start: new Date().toISOString(),
+        trial_end: null,
       }),
     });
 
@@ -231,7 +230,7 @@ serve(async (req) => {
       plan,
       value: p.value / 100,
       billingType: bt,
-      status: subStatus,
+      status: "active",
       paymentStatus,
       pixQrCode,
       invoiceUrl,
