@@ -1321,15 +1321,16 @@
     .stats-grid {
       display: flex;
       justify-content: center;
-      align-items: center;
-      gap: 24px;
+      align-items: flex-start;
+      gap: 0;
       max-width: 800px;
       margin: 0 auto;
     }
 
     .stat-item {
       text-align: center;
-      white-space: nowrap;
+      flex: 1;
+      padding: 0 16px;
     }
 
     .stat-number {
@@ -1346,7 +1347,6 @@
       margin-top: 4px;
       font-weight: 600;
       letter-spacing: .03em;
-      max-width: 120px;
     }
 
     .stat-divider {
@@ -1356,12 +1356,15 @@
 
     @media(max-width:600px) {
       .stats-grid {
-        gap: 12px;
+        gap: 0;
+      }
+
+      .stat-item {
+        padding: 0 8px;
       }
 
       .stat-label {
         font-size: .72rem;
-        max-width: 90px;
       }
     }
 
