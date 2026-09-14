@@ -1,6 +1,6 @@
 export const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 export const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-export const APP_URL = Deno.env.get("APP_URL") || "https://app.fisiohome.com";
+export const APP_URL = Deno.env.get("APP_URL") || "https://app.pajocompany.com.br";
 
 export function api(path: string, options: RequestInit = {}) {
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
