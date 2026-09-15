@@ -5,6 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FisioHome — Prontuário Digital para Fisioterapeutas</title>
+
+  <!-- Facebook Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '929175296483682');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=929175296483682&ev=PageView&noscript=1"/></noscript>
   <style>
     @font-face {
       font-family: 'Cormorant Garamond';
@@ -1847,7 +1863,7 @@
   <!-- NAV -->
   <nav>
     <a href="#" class="nav-logo">Fisio<span>Home</span></a>
-    <a href="checkout.html?plan=anual" class="nav-cta">Começar agora</a>
+    <a href="checkout.html?plan=anual" class="nav-cta" onclick="fbq('track', 'ViewContent', {content_name: 'CTA Nav', content_category: 'Landing Page'});">Começar agora</a>
   </nav>
 
   <!-- HERO -->
@@ -1859,7 +1875,7 @@
       <p class="hero-subtitle">Fisioterapeutas home care perdem em média 40 minutos por dia com papelada, fichas
         perdidas e burocracia desnecessária. Esse tempo é seu — e você pode recuperá-lo ainda hoje.</p>
       <div class="hero-actions">
-        <a href="checkout.html?plan=anual" class="btn-hero btn-hero-primary">Quero recuperar meu tempo →</a>
+        <a href="checkout.html?plan=anual" class="btn-hero btn-hero-primary" onclick="fbq('track', 'ViewContent', {content_name: 'CTA Hero', content_category: 'Landing Page'});">Quero recuperar meu tempo →</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -2162,7 +2178,8 @@
         <div class="price-value"><sup>R$</sup>47,90<sub>/mês</sub></div>
         <div class="price-desc">flexível, cancela quando quiser</div>
         <a href="checkout.html?plan=mensal" class="btn-price btn-price-secondary"
-          style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
+          style="display:inline-block;text-align:center;text-decoration:none;"
+          onclick="fbq('track', 'ViewContent', {content_name: 'Plano Mensal', content_category: 'Pricing'});">Escolher</a>
       </div>
       <div class="price-card highlight">
         <div class="price-badge">MAIS ESCOLHIDO</div>
@@ -2170,14 +2187,16 @@
         <div class="price-value"><sup>R$</sup>29,90<sub>/mês</sub></div>
         <div class="price-desc">12x R$29,90 sem juros - economize R$216</div>
         <a href="checkout.html?plan=anual" class="btn-price btn-price-primary"
-          style="display:inline-block;text-align:center;text-decoration:none;">Assinar agora</a>
+          style="display:inline-block;text-align:center;text-decoration:none;"
+          onclick="fbq('track', 'ViewContent', {content_name: 'Plano Anual', content_category: 'Pricing'});">Assinar agora</a>
       </div>
       <div class="price-card">
         <div class="price-plan">Semestral</div>
         <div class="price-value"><sup>R$</sup>39,90<sub>/mês</sub></div>
         <div class="price-desc">6x R$39,90 sem juros - economize R$96</div>
         <a href="checkout.html?plan=semestral" class="btn-price btn-price-secondary"
-          style="display:inline-block;text-align:center;text-decoration:none;">Escolher</a>
+          style="display:inline-block;text-align:center;text-decoration:none;"
+          onclick="fbq('track', 'ViewContent', {content_name: 'Plano Semestral', content_category: 'Pricing'});">Escolher</a>
       </div>
     </div>
   </section>
@@ -2196,7 +2215,7 @@
       <div class="guarantee-title">7 dias de garantia total, sem perguntas</div>
       <p class="guarantee-text">Acesse, use, teste tudo. Se em 7 dias você não sentir diferença na sua rotina,
         devolvemos 100% do valor. Sem burocracia, sem discussão.</p>
-      <a href="checkout.html?plan=anual" class="btn-hero btn-hero-primary guarantee-cta">Quero testar sem risco →</a>
+      <a href="checkout.html?plan=anual" class="btn-hero btn-hero-primary guarantee-cta" onclick="fbq('track', 'ViewContent', {content_name: 'CTA Garantia', content_category: 'Landing Page'});">Quero testar sem risco →</a>
     </div>
   </section>
 
@@ -2354,7 +2373,7 @@
     <p class="cta-sub">Cada atendimento que passa sem organização é tempo e energia que você não vai recuperar. Centenas
       de fisioterapeutas home care já mudaram a rotina — e você pode fazer o mesmo agora.</p>
     <div class="cta-actions">
-      <a href="checkout.html?plan=anual" class="btn-hero btn-hero-primary">Quero começar agora →</a>
+      <a href="checkout.html?plan=anual" class="btn-hero btn-hero-primary" onclick="fbq('track', 'ViewContent', {content_name: 'CTA Final', content_category: 'Landing Page'});">Quero começar agora →</a>
     </div>
   </section>
 

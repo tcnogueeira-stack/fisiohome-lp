@@ -5,6 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Finalizar assinatura — FisioHome</title>
+
+  <!-- Facebook Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '929175296483682');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=929175296483682&ev=PageView&noscript=1"/></noscript>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -905,6 +921,14 @@
       const showCard = selectedMethod === 'CREDIT_CARD';
       document.getElementById('cardFields').classList.toggle('visible', showCard);
       if (showCard) renderInstallments();
+
+      // Facebook Pixel — AddPaymentInfo
+      fbq('track', 'AddPaymentInfo', {
+        content_name: selectedMethod === 'PIX' ? 'PIX' : 'Cartão de Crédito',
+        content_category: 'Checkout',
+        value: PLANS[selectedPlan].totalNum,
+        currency: 'BRL'
+      });
     }
 
     // ── SUBMIT ──
@@ -986,6 +1010,14 @@
           } else {
             document.getElementById('successText').textContent = 'Pagamento processado! Seu acesso será liberado em instantes.';
           }
+
+          // Facebook Pixel — Purchase (Cartão de crédito)
+          fbq('track', 'Purchase', {
+            content_name: 'Assinatura FisioHome',
+            content_category: 'Cartão de Crédito',
+            value: PLANS[selectedPlan].totalNum,
+            currency: 'BRL'
+          });
         }
       } catch {
         document.getElementById('errorBox').textContent = 'Erro de conexão. Verifique sua internet.';
@@ -1002,6 +1034,14 @@
       document.getElementById('pixDisplay').classList.remove('visible');
       document.getElementById('successDisplay').classList.add('visible');
       document.getElementById('successText').textContent = 'Pagamento confirmado! Seu acesso já está liberado.';
+
+      // Facebook Pixel — Purchase (PIX confirmado)
+      fbq('track', 'Purchase', {
+        content_name: 'Assinatura FisioHome',
+        content_category: 'PIX',
+        value: PLANS[selectedPlan].totalNum,
+        currency: 'BRL'
+      });
     }
 
     async function checkPixStatus(subId) {
@@ -1045,6 +1085,14 @@
     getPlanFromUrl();
     document.querySelectorAll('.plan-option').forEach(o => o.classList.toggle('active', o.dataset.plan === selectedPlan));
     updateSummary();
+
+    // Facebook Pixel — InitiateCheckout ao carregar a página
+    fbq('track', 'InitiateCheckout', {
+      content_name: 'Checkout FisioHome',
+      content_category: 'Assinatura',
+      value: PLANS[selectedPlan].totalNum,
+      currency: 'BRL'
+    });
   </script>
 </body>
 </html>
