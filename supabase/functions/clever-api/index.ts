@@ -67,6 +67,61 @@ const PLANS = {
   anual:     { value: 35880, desc: "Anual",         cycle: "YEARLY",         max: 12 },
 } as const;
 
+// ── Facebook Conversions API (CAPI) ──
+const FB_PIXEL_ID = "929175296483682";
+
+async function sha256(value: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(value.trim().toLowerCase());
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function sendFacebookCAPI(
+  eventName: string,
+  userData: { email?: string; phone?: string; ip?: string | null; userAgent?: string | null },
+  eventData: { value: number; currency: string; content_name: string },
+  eventSourceUrl: string,
+) {
+  const token = Deno.env.get("FACEBOOK_CAPI_TOKEN");
+  if (!token) return;
+
+  const payload: Record<string, unknown> = {
+    data: [
+      {
+        event_name: eventName,
+        event_time: Math.floor(Date.now() / 1000),
+        user_data: {
+          em: userData.email ? await sha256(userData.email) : undefined,
+          ph: userData.phone ? await sha256(userData.phone) : undefined,
+          client_ip_address: userData.ip || undefined,
+          client_user_agent: userData.userAgent || undefined,
+        },
+        event_data: {
+          value: eventData.value,
+          currency: eventData.currency,
+          content_name: eventData.content_name,
+        },
+        action_source: "website",
+        event_source_url: eventSourceUrl,
+      },
+    ],
+    access_token: token,
+  };
+
+  try {
+    await fetch(`https://graph.facebook.com/v19.0/${FB_PIXEL_ID}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // Non-critical — don't block the response
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -99,6 +154,14 @@ serve(async (req) => {
         const user = Array.isArray(users) ? users[0] : null;
         if (user?.id && (firstPayment.status === "RECEIVED" || firstPayment.status === "CONFIRMED" || firstPayment.status === "active")) {
           await savePayment(user.id, firstPayment, null);
+
+          // Dispara Purchase via CAPI quando PIX é confirmado pelo polling
+          await sendFacebookCAPI(
+            "Purchase",
+            { email: user.email, phone: user.phone, ip: req.headers.get("cf-connecting-ip"), userAgent: req.headers.get("user-agent") },
+            { value: PLANS[user.plan as keyof typeof PLANS]?.value / 100 || 0, currency: "BRL", content_name: `Assinatura FisioHome - ${user.plan}` },
+            "https://fisiohome.com/checkout.html",
+          );
         }
       }
 
@@ -218,6 +281,16 @@ serve(async (req) => {
         // a cobrança exista no Supabase antes do webhook do Asaas chegar.
         // O webhook (bright-responder) atualiza a mesma linha por asaas_pay_id.
         await savePayment(customerId, firstPayment, pixQrCode);
+
+        // Se pagamento já confirmado no checkout, dispara Purchase via CAPI
+        if (firstPayment.status === "RECEIVED" || firstPayment.status === "CONFIRMED") {
+          await sendFacebookCAPI(
+            "Purchase",
+            { email, phone, ip: req.headers.get("cf-connecting-ip"), userAgent: req.headers.get("user-agent") },
+            { value: p.value / 100, currency: "BRL", content_name: `Assinatura FisioHome - ${p.desc}` },
+            "https://fisiohome.com/checkout.html",
+          );
+        }
       }
     } catch {
       // Non-critical
