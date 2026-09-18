@@ -443,6 +443,61 @@
 
     .summary-installments strong { color: var(--green-deep); }
 
+    /* ── COUPON ── */
+    .coupon-field {
+      display: flex;
+      gap: 0;
+      margin-bottom: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--cream);
+      transition: .2s;
+    }
+
+    .coupon-field:focus-within {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(19, 160, 144, .12);
+    }
+
+    .coupon-field input {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: .82rem;
+      color: var(--charcoal);
+      background: transparent;
+      outline: none;
+      min-width: 0;
+    }
+
+    .coupon-field input::placeholder { color: var(--soft); }
+
+    .coupon-btn {
+      padding: 10px 16px;
+      border: none;
+      background: var(--green-deep);
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: .2s;
+    }
+
+    .coupon-btn:hover { background: var(--green-mid); }
+
+    .coupon-msg {
+      font-size: .72rem;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .coupon-msg.success { color: var(--green-deep); display: block; }
+    .coupon-msg.error { color: #b91c1c; display: block; }
+
     .summary-total {
       display: flex;
       justify-content: space-between;
@@ -734,6 +789,12 @@
           </div>
         </div>
 
+        <div class="coupon-field">
+          <input type="text" id="couponInput" placeholder="Cupom de desconto" maxlength="20">
+          <button type="button" class="coupon-btn" id="couponBtn" onclick="applyCoupon()">Aplicar</button>
+        </div>
+        <div class="coupon-msg" id="couponMsg"></div>
+
         <div class="summary-total" style="margin-bottom:12px">
           <span>Valor total</span>
           <span id="summaryTotal" style="font-weight:800">R$ 358,80</span>
@@ -797,6 +858,37 @@
     let selectedPlan = 'anual';
     let selectedMethod = 'PIX';
     let selectedInstallment = 1;
+    let couponDiscount = 0;
+
+    // ── Aplicar cupom ──
+    function applyCoupon() {
+      const input = document.getElementById('couponInput');
+      const msg = document.getElementById('couponMsg');
+      const code = input.value.trim().toUpperCase();
+
+      if (!code) {
+        msg.textContent = 'Informe um código de cupom.';
+        msg.className = 'coupon-msg error';
+        return;
+      }
+
+      // Exemplo de cupom (substituir por validação real via API)
+      if (code === 'DESCONTO10') {
+        couponDiscount = 0.10;
+        msg.textContent = 'Cupom aplicado! 10% de desconto.';
+        msg.className = 'coupon-msg success';
+      } else if (code === 'FISIO20') {
+        couponDiscount = 0.20;
+        msg.textContent = 'Cupom aplicado! 20% de desconto.';
+        msg.className = 'coupon-msg success';
+      } else {
+        couponDiscount = 0;
+        msg.textContent = 'Cupom inválido.';
+        msg.className = 'coupon-msg error';
+      }
+
+      updateSummary();
+    }
 
     // ── Ler plano da URL ──
     function getPlanFromUrl() {
@@ -855,7 +947,12 @@
       const inst = getInstallments(selectedPlan);
       document.getElementById('summaryPlanName').textContent = `Plano ${p.label}`;
       document.getElementById('summaryPrice').textContent = p.price.replace('R$ ', '');
-      document.getElementById('summaryTotal').textContent = p.total;
+
+      let total = p.totalNum;
+      if (couponDiscount > 0) {
+        total = total * (1 - couponDiscount);
+      }
+      document.getElementById('summaryTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
 
       const sel = inst.find(i => i.count === selectedInstallment) || inst[inst.length - 1];
       document.getElementById('summaryPlanDesc').textContent = sel.label;
@@ -946,6 +1043,9 @@
       if (!phone || phone.replace(/\D/g, '').length < 10) { showFieldError('Phone', 'Informe um telefone válido.'); hasError = true; }
 
       const body = { name, email, phone, cpfCnpj, plan: selectedPlan, billingType: selectedMethod, installmentCount: selectedInstallment };
+
+      const couponCode = document.getElementById('couponInput').value.trim();
+      if (couponCode) body.couponCode = couponCode;
 
       if (selectedMethod === 'CREDIT_CARD') {
         const cardNumber = document.getElementById('fieldCardNumber').value.trim().replace(/\s/g, '');
