@@ -178,7 +178,9 @@ serve(async (req) => {
     const cust = await fetch(`${ASAAS_URL}/customers`, {
       method: "POST",
       headers: ASAAS_HEADERS,
-      body: JSON.stringify({ name, email, mobilePhone: phone, cpfCnpj, notificationDisabled: false }),
+      // notificationDisabled: true → o Asaas NÃO envia e-mails ao cliente;
+      // todos os e-mails transacionais saem do Supabase (activator).
+      body: JSON.stringify({ name, email, mobilePhone: phone, cpfCnpj, notificationDisabled: true }),
     }).then(r => r.json());
 
     if (!cust.id) throw new Error(`Erro Asaas: ${JSON.stringify(cust)}`);
@@ -280,7 +282,7 @@ serve(async (req) => {
         // Upsert de `payments`: cria a linha já no checkout para garantir que
         // a cobrança exista no Supabase antes do webhook do Asaas chegar.
         // O webhook (bright-responder) atualiza a mesma linha por asaas_pay_id.
-        await savePayment(customerId, firstPayment, pixQrCode);
+        if (customerId) await savePayment(customerId, firstPayment, pixQrCode);
 
         // Se pagamento já confirmado no checkout, dispara Purchase via CAPI
         if (firstPayment.status === "RECEIVED" || firstPayment.status === "CONFIRMED") {
@@ -310,6 +312,6 @@ serve(async (req) => {
     });
 
   } catch (err) {
-    return json({ error: err.message }, 400);
+    return json({ error: err instanceof Error ? err.message : String(err) }, 400);
   }
 });

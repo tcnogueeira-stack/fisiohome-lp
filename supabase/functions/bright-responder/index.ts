@@ -1,12 +1,34 @@
 import { serve } from "https://deno.land/std@0.170.0/http/server.ts";
 import { api, mapAsaasStatus } from "../_shared/db.ts";
 
+// Token configurado no painel do Asaas (webhook → cabeçalho "token").
+// Se o secret não estiver setado, a validação fica desligada (compatibilidade).
+const ASAAS_WEBHOOK_TOKEN = Deno.env.get("ASAAS_WEBHOOK_TOKEN") || "";
+
 serve(async (req) => {
   if (req.method !== "POST") return new Response("ok", { status: 200 });
+
+  if (ASAAS_WEBHOOK_TOKEN) {
+    const provided =
+      req.headers.get("token") ||
+      req.headers.get("x-asaas-token") ||
+      new URL(req.url).searchParams.get("token") ||
+      "";
+    if (provided !== ASAAS_WEBHOOK_TOKEN) {
+      console.warn("webhook rejeitado: token inválido");
+      return new Response("unauthorized", { status: 401 });
+    }
+  }
 
   try {
     const event = await req.json();
     const { payment, subscription } = event || {};
+
+    // Validação do evento: precisa trazer a cobrança (payment) e a assinatura.
+    // Eventos sem esse formato são confirmados com 200 e ignorados.
+    if (payment && typeof payment.id !== "string") {
+      return new Response("ok", { status: 200 });
+    }
 
     // A assinatura vem dentro do objeto `payment` (payment.subscription),
     // ou eventualmente no top-level como objeto (subscription.id).
@@ -76,6 +98,6 @@ serve(async (req) => {
 
     return new Response("ok", { status: 200 });
   } catch (err) {
-    return new Response(`erro: ${err.message || err}`, { status: 400 });
+    return new Response(`erro: ${err instanceof Error ? err.message : String(err)}`, { status: 400 });
   }
 });

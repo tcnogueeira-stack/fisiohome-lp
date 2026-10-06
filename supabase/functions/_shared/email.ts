@@ -29,33 +29,151 @@ const emailShell = (name: string, inner: string) => `
   </div>
 `;
 
-// 1. E-mail de confirmação de compra
-export async function sendPurchaseConfirmation(to: string, name: string, plan: string, value: number) {
+const summaryBox = (rows: string) => `
+  <div style="background:#F8F4EE;border-radius:12px;padding:20px;margin:20px 0;font-size:.85rem;color:#4A6560">
+    <p style="margin:0 0 8px"><strong>Resumo da sua compra:</strong></p>
+    ${rows}
+  </div>
+`;
+
+const appButton = (label: string, href: string) => `
+  <div style="text-align:center;margin:24px 0">
+    <a href="${href}" style="display:inline-block;background:#0d7a6d;color:#fff;padding:14px 32px;border-radius:10px;font-size:.95rem;font-weight:700;text-decoration:none">
+      ${label} →
+    </a>
+  </div>
+`;
+
+function planLabel(plan?: string) {
+  return plan === "mensal" ? "Mensal" : plan === "semestral" ? "Semestral" : "Anual";
+}
+
+function methodLabel(method?: string | null) {
+  if (method === "pix") return "PIX";
+  if (method === "credit_card") return "Cartão de crédito";
+  if (method === "boleto") return "Boleto";
+  return method || "—";
+}
+
+function money(value: number) {
+  return `R$ ${value.toFixed(2).replace(".", ",")}`;
+}
+
+function fmtDate(value?: string | null) {
+  if (!value) return null;
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00` : value;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("pt-BR");
+}
+
+export interface PendingPaymentDetails {
+  paymentId?: string | null;
+  dueDate?: string | null;
+  invoiceUrl?: string | null;
+  pixCode?: string | null;
+  pixQrCode?: string | null;
+}
+
+// 1. E-mail "Pagamento pendente" (PIX) — dados para o cliente pagar
+export async function sendPaymentPending(
+  to: string,
+  name: string,
+  plan: string,
+  value: number,
+  details: PendingPaymentDetails,
+) {
   const transporter = getTransporter();
-  const planLabel = plan === "mensal" ? "Mensal" : plan === "semestral" ? "Semestral" : "Anual";
+  const due = fmtDate(details.dueDate);
+
+  const rows = [
+    `<p style="margin:0 0 4px">Plano: <strong>${planLabel(plan)}</strong></p>`,
+    `<p style="margin:0 0 4px">Valor: <strong>${money(value)}</strong></p>`,
+    details.paymentId
+      ? `<p style="margin:0 0 4px">Identificação do pagamento: <strong>${details.paymentId}</strong></p>`
+      : "",
+    due ? `<p style="margin:0">Vencimento: <strong>${due}</strong></p>` : "",
+  ].join("");
+
+  const pixBox = details.pixCode || details.pixQrCode
+    ? `
+      <div style="background:#e5f4f2;border-radius:12px;padding:20px;margin:20px 0;text-align:center">
+        <p style="margin:0 0 12px;font-size:.85rem;color:#4A6560"><strong>Pague com PIX</strong></p>
+        ${details.pixQrCode
+          ? `<img src="data:image/png;base64,${details.pixQrCode}" alt="QR Code PIX" style="width:200px;height:200px" />`
+          : ""}
+        ${details.pixCode
+          ? `
+            <p style="margin:16px 0 6px;font-size:.8rem;color:#4A6560"><strong>PIX copia e cola:</strong></p>
+            <p style="margin:0;font-size:.8rem;word-break:break-all;background:#fff;border:1px solid #D6E5E2;border-radius:8px;padding:12px;user-select:all">${details.pixCode}</p>
+          `
+          : ""}
+      </div>
+    `
+    : "";
+
   await transporter.sendMail({
     from: SMTP_FROM,
     to,
-    subject: `Compra confirmada — FisioHome · Plano ${planLabel}`,
+    subject: `Pagamento pendente — FisioHome · Plano ${planLabel(plan)}`,
     html: emailShell(name, `
       <p style="font-size:.9rem;line-height:1.7;color:#4A6560">
-        Recebemos o seu pagamento e sua compra está <strong>confirmada</strong>! Seja bem-vindo(a) ao FisioHome. 🎉
+        Recebemos a sua compra, mas o pagamento <strong>ainda não foi confirmado</strong>.
+        Para concretizar, realize o pagamento via <strong>PIX</strong> usando os dados abaixo.
       </p>
-      <div style="background:#F8F4EE;border-radius:12px;padding:20px;margin:20px 0;font-size:.85rem;color:#4A6560">
-        <p style="margin:0 0 8px"><strong>Resumo da sua compra:</strong></p>
-        <p style="margin:0 0 4px">Plano: <strong>${planLabel}</strong></p>
-        <p style="margin:0">Valor: <strong>R$ ${value.toFixed(2).replace(".", ",")}</strong></p>
-      </div>
-      <div style="text-align:center;margin:24px 0">
-        <a href="${APP_URL}" style="display:inline-block;background:#0d7a6d;color:#fff;padding:14px 32px;border-radius:10px;font-size:.95rem;font-weight:700;text-decoration:none">
-          Acessar o App →
-        </a>
-      </div>
+      ${summaryBox(rows)}
+      ${pixBox}
+      ${details.invoiceUrl ? appButton("Concluir pagamento", details.invoiceUrl) : ""}
+      <p style="font-size:.82rem;line-height:1.6;color:#4A6560">
+        Assim que o pagamento for confirmado, você receberá o e-mail
+        <strong>"Pagamento aprovado"</strong> com a confirmação da compra e, em seguida,
+        seus dados de acesso ao FisioHome.
+      </p>
     `),
   });
 }
 
-// 2. E-mail com dados de acesso (senha provisória)
+// 2. E-mail "Pagamento aprovado" — confirmação com os dados da compra
+export async function sendPaymentApproved(
+  to: string,
+  name: string,
+  plan: string,
+  value: number,
+  details: {
+    paymentId?: string | null;
+    method?: string | null;
+    paidAt?: string | null;
+  } = {},
+) {
+  const transporter = getTransporter();
+  const paid = fmtDate(details.paidAt);
+
+  const rows = [
+    `<p style="margin:0 0 4px">Plano: <strong>${planLabel(plan)}</strong></p>`,
+    `<p style="margin:0 0 4px">Valor: <strong>${money(value)}</strong></p>`,
+    `<p style="margin:0 0 4px">Método de pagamento: <strong>${methodLabel(details.method)}</strong></p>`,
+    details.paymentId
+      ? `<p style="margin:0 0 4px">Identificação do pagamento: <strong>${details.paymentId}</strong></p>`
+      : "",
+    paid ? `<p style="margin:0">Data: <strong>${paid}</strong></p>` : "",
+  ].join("");
+
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to,
+    subject: `Pagamento aprovado — FisioHome · Plano ${planLabel(plan)}`,
+    html: emailShell(name, `
+      <p style="font-size:.9rem;line-height:1.7;color:#4A6560">
+        Seu pagamento foi <strong>aprovado</strong> e sua compra está <strong>confirmada</strong>!
+        Seja bem-vindo(a) ao FisioHome. 🎉
+      </p>
+      ${summaryBox(rows)}
+      ${appButton("Acessar o App", APP_URL)}
+    `),
+  });
+}
+
+// 3. E-mail com dados de acesso (senha provisória) — INALTERADO
 export async function sendAccessCredentials(to: string, name: string, password: string) {
   const transporter = getTransporter();
   await transporter.sendMail({
@@ -80,6 +198,36 @@ export async function sendAccessCredentials(to: string, name: string, password: 
           Acessar o App →
         </a>
       </div>
+    `),
+  });
+}
+
+// 3b. Conta já existe no Auth (compra/renovação): mesmo visual, com link de
+// redefinição de senha no lugar da senha provisória.
+export async function sendAccessRecovery(to: string, name: string, resetLink: string) {
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to,
+    subject: "Seus dados de acesso ao FisioHome",
+    html: emailShell(name, `
+      <p style="font-size:.9rem;line-height:1.7;color:#4A6560">
+        Sua compra foi confirmada e sua conta FisioHome já está ativa.
+        Para entrar, defina sua senha pelo botão abaixo:
+      </p>
+      <div style="background:#e5f4f2;border-radius:12px;padding:20px;margin:20px 0">
+        <p style="margin:0 0 8px;font-size:.8rem;color:#4A6560"><strong>Seus dados de acesso:</strong></p>
+        <p style="margin:0;font-size:.9rem"><strong>Login:</strong> ${to}</p>
+      </div>
+      <div style="text-align:center;margin:24px 0">
+        <a href="${resetLink}" style="display:inline-block;background:#0d7a6d;color:#fff;padding:14px 32px;border-radius:10px;font-size:.95rem;font-weight:700;text-decoration:none">
+          Definir minha senha →
+        </a>
+      </div>
+      <p style="font-size:.82rem;color:#8AADA8;text-align:center">
+        Se o botão não funcionar, copie e cole o endereço no navegador:
+        <br />${resetLink}
+      </p>
     `),
   });
 }
