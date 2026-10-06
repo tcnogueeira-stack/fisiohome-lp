@@ -52,6 +52,7 @@ function methodLabel(method?: string | null) {
   if (method === "pix") return "PIX";
   if (method === "credit_card") return "Cartão de crédito";
   if (method === "boleto") return "Boleto";
+  if (method === "coupon") return "Cupom promocional";
   return method || "—";
 }
 
@@ -143,6 +144,7 @@ export async function sendPaymentApproved(
     paymentId?: string | null;
     method?: string | null;
     paidAt?: string | null;
+    couponCode?: string | null;
   } = {},
 ) {
   const transporter = getTransporter();
@@ -154,6 +156,9 @@ export async function sendPaymentApproved(
     `<p style="margin:0 0 4px">Método de pagamento: <strong>${methodLabel(details.method)}</strong></p>`,
     details.paymentId
       ? `<p style="margin:0 0 4px">Identificação do pagamento: <strong>${details.paymentId}</strong></p>`
+      : "",
+    details.couponCode
+      ? `<p style="margin:0 0 4px">Cupom aplicado: <strong>${details.couponCode}</strong></p>`
       : "",
     paid ? `<p style="margin:0">Data: <strong>${paid}</strong></p>` : "",
   ].join("");

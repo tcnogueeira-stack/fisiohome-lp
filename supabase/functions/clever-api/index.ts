@@ -28,7 +28,12 @@ function json(data: unknown, status = 200) {
 // Upsert de `payments`: atualiza por asaas_pay_id se já existir, caso
 // contrário cria uma nova linha. NÃO usa upsert nativo do PostgREST para
 // não depender de constraint única no asaas_pay_id.
-async function savePayment(user_id: string, payment: Record<string, unknown>, pixQrCode: { encodedImage?: string; payload?: string } | null) {
+async function savePayment(
+  user_id: string,
+  payment: Record<string, unknown>,
+  pixQrCode: { encodedImage?: string; payload?: string } | null,
+  couponCode?: string | null,
+) {
   const body: Record<string, unknown> = {
     user_id,
     asaas_pay_id: payment.id,
@@ -41,6 +46,7 @@ async function savePayment(user_id: string, payment: Record<string, unknown>, pi
     pix_qrcode: pixQrCode?.encodedImage || null,
     pix_code: pixQrCode?.payload || null,
   };
+  if (couponCode) body.coupon_code = couponCode;
   if (payment.paymentDate) body.paid_at = payment.paymentDate;
   if (payment.clientPaymentDate) body.paid_at = payment.clientPaymentDate;
 
@@ -66,6 +72,53 @@ const PLANS = {
   semestral: { value: 23940, desc: "Semestral",     cycle: "SEMIANNUALLY",   max: 6 },
   anual:     { value: 35880, desc: "Anual",         cycle: "YEARLY",         max: 12 },
 } as const;
+
+// ── Cupons de desconto ──
+function couponMessage(reason: string) {
+  switch (reason) {
+    case "inactive":
+    case "expired":
+    case "not_started":
+      return "Cupom expirado ou indisponível.";
+    case "uses_exhausted":
+      return "Cupom esgotado.";
+    case "already_used":
+      return "Este e-mail já utilizou este cupom.";
+    case "wrong_plan":
+      return "Cupom não válido para este plano.";
+    case "email_required":
+      return "Informe seu e-mail para usar este cupom.";
+    default:
+      return "Cupom inválido.";
+  }
+}
+
+// Upsert de `users` por e-mail (único). Reutilizado pelo fluxo normal
+// (assinatura Asaas) e pelo fluxo gratuito (cupom 100%).
+async function ensureUser(email: string, name: string, phone?: string, cpfCnpj?: string): Promise<string> {
+  const existing = await api(`users?email=eq.${encodeURIComponent(email)}&select=id`)
+    .then(r => r.json())
+    .catch(() => []);
+
+  if (Array.isArray(existing) && existing.length > 0) {
+    const customerId = existing[0].id as string;
+    await api(`users?id=eq.${customerId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name, phone, cpf_cnpj: cpfCnpj }),
+    });
+    return customerId;
+  }
+
+  const dbCust = await api("users", {
+    method: "POST",
+    headers: { "Prefer": "return=representation" },
+    body: JSON.stringify({ name, email, phone, cpf_cnpj: cpfCnpj }),
+  }).then(r => r.json());
+
+  const customerId = (Array.isArray(dbCust) ? dbCust[0]?.id : dbCust?.id) as string | undefined;
+  if (!customerId) throw new Error(`Erro banco: ${JSON.stringify(dbCust)}`);
+  return customerId;
+}
 
 // ── Facebook Conversions API (CAPI) ──
 const FB_PIXEL_ID = "929175296483682";
@@ -131,6 +184,11 @@ serve(async (req) => {
     return json({ error: "Método não permitido" }, 405);
   }
 
+  // Cupom já registrado neste request — devolvido se o checkout falhar
+  // antes de criar a assinatura/cobrança no Asaas.
+  let claimed: { code: string; email: string } | null = null;
+  let couponSettled = false;
+
   try {
     const body = await req.json();
     const { action } = body;
@@ -168,10 +226,103 @@ serve(async (req) => {
       return json({ status: firstPayment?.status || "pending", invoiceUrl: firstPayment?.invoiceUrl || null });
     }
 
-    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo, installmentCount } = body;
+    // ── validateCoupon: valida o cupom SEM registrar o uso ──
+    if (action === "validateCoupon") {
+      const { couponCode, email, plan } = body;
+      const base = plan ? PLANS[plan as keyof typeof PLANS]?.value : undefined;
+      if (!base) return json({ valid: false, reason: "wrong_plan", message: "Plano inválido." });
+
+      const res = await api("rpc/validate_coupon", {
+        method: "POST",
+        body: JSON.stringify({ p_code: couponCode ?? null, p_email: email ?? null, p_plan: plan }),
+      }).then(r => r.json()).catch(() => null);
+
+      if (!res?.valid) {
+        const reason = res?.reason || "not_found";
+        return json({ valid: false, reason, message: couponMessage(reason) });
+      }
+
+      const pct = Number(res.discount_percent);
+      const finalValue = Math.round(base * (100 - pct) / 100);
+      return json({
+        valid: true,
+        discountPercent: pct,
+        originalValue: base / 100,
+        finalValue: finalValue / 100,
+        couponCode: res.coupon_code,
+      });
+    }
+
+    const { name, email, phone, cpfCnpj, plan, billingType, creditCard, creditCardHolderInfo, installmentCount, couponCode } = body;
     const bt = billingType || "PIX";
     if (!name || !email || !plan) {
       return json({ error: "name, email e plan são obrigatórios" }, 400);
+    }
+
+    const p = PLANS[plan as keyof typeof PLANS];
+    if (!p) return json({ error: "Plano inválido" }, 400);
+
+    // ── Cupom de desconto: registra o uso (bloqueio por e-mail/limite) ──
+    let coupon: string | null = null;
+    let finalValue: number = p.value; // centavos
+    if (couponCode) {
+      const claim = await api("rpc/claim_coupon", {
+        method: "POST",
+        body: JSON.stringify({ p_code: couponCode, p_email: email, p_plan: plan }),
+      }).then(r => r.json()).catch(() => null);
+
+      if (!claim?.valid) {
+        return json({ error: couponMessage(claim?.reason || "not_found") }, 400);
+      }
+      const code = String(claim.coupon_code);
+      coupon = code;
+      claimed = { code, email };
+      finalValue = Math.round(p.value * (100 - Number(claim.discount_percent)) / 100);
+    }
+
+    // ── Cupom de 100%: acesso gratuito, sem cobrança no Asaas ──
+    // Grava users + payments (status 'received') → o trigger do Postgres
+    // dispara "Pagamento aprovado" + "Dados de acesso" como em qualquer compra.
+    if (finalValue <= 0) {
+      const customerId = await ensureUser(email, name, phone, cpfCnpj);
+      await api(`users?id=eq.${customerId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          plan,
+          status: "active",
+          current_period_start: new Date().toISOString(),
+          trial_end: null,
+        }),
+      });
+
+      const nowIso = new Date().toISOString();
+      await api("payments", {
+        method: "POST",
+        body: JSON.stringify({
+          user_id: customerId,
+          amount: 0,
+          fee: 0,
+          status: "received",
+          payment_method: "coupon",
+          coupon_code: coupon,
+          paid_at: nowIso,
+          due_date: nowIso.split("T")[0],
+        }),
+      });
+      couponSettled = true;
+
+      return json({
+        ok: true,
+        free: true,
+        plan,
+        value: 0,
+        billingType: "COUPON",
+        status: "active",
+        paymentStatus: "RECEIVED",
+        couponCode: coupon,
+        pixQrCode: null,
+        invoiceUrl: null,
+      });
     }
 
     // 1. Cliente no Asaas
@@ -185,39 +336,17 @@ serve(async (req) => {
 
     if (!cust.id) throw new Error(`Erro Asaas: ${JSON.stringify(cust)}`);
 
-    // 2. Salvar customer no Supabase (users = dados do Asaas + assinatura)
-    // UPSERT: busca por e-mail antes (users.email tem UNIQUE). Se já existe,
-    // reaproveita o id e só atualiza os dados; se não, cria a linha.
-    let customerId: string | null = null;
-    const existing = await api(`users?email=eq.${encodeURIComponent(email)}&select=id`)
-      .then(r => r.json())
-      .catch(() => []);
+    // 2. Usuário local (upsert por e-mail — users.email tem UNIQUE)
+    const customerId = await ensureUser(email, name, phone, cpfCnpj);
 
-    if (Array.isArray(existing) && existing.length > 0) {
-      customerId = existing[0].id;
-      await api(`users?id=eq.${customerId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ name, phone, cpf_cnpj: cpfCnpj }),
-      });
-    } else {
-      const dbCust = await api("users", {
-        method: "POST",
-        headers: { "Prefer": "return=representation" },
-        body: JSON.stringify({ name, email, phone, cpf_cnpj: cpfCnpj }),
-      }).then(r => r.json());
-
-      customerId = Array.isArray(dbCust) ? dbCust[0]?.id : dbCust?.id;
-      if (!customerId) throw new Error(`Erro banco: ${JSON.stringify(dbCust)}`);
-    }
-
-    // 3. Montar payload da assinatura
-    const p = PLANS[plan as keyof typeof PLANS];
+    // 3. Montar payload da assinatura — valor JÁ com desconto aplicado,
+    //    para que webhook, payments.amount, QR PIX e e-mails nascam corretos.
     const dueDate = new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0];
 
     const subPayload: Record<string, unknown> = {
       customer: cust.id,
       billingType: bt,
-      value: p.value / 100,
+      value: finalValue / 100,
       nextDueDate: dueDate,
       cycle: p.cycle,
       description: `FisioHome - ${p.desc}`,
@@ -241,6 +370,7 @@ serve(async (req) => {
     }).then(r => r.json());
 
     if (!sub.id) throw new Error(`Erro assinatura Asaas: ${JSON.stringify(sub)}`);
+    couponSettled = true;
 
     // 4. Atualizar `users` com os dados da assinatura no Asaas
     await api(`users?id=eq.${customerId}`, {
@@ -282,14 +412,14 @@ serve(async (req) => {
         // Upsert de `payments`: cria a linha já no checkout para garantir que
         // a cobrança exista no Supabase antes do webhook do Asaas chegar.
         // O webhook (bright-responder) atualiza a mesma linha por asaas_pay_id.
-        if (customerId) await savePayment(customerId, firstPayment, pixQrCode);
+        if (customerId) await savePayment(customerId, firstPayment, pixQrCode, coupon);
 
         // Se pagamento já confirmado no checkout, dispara Purchase via CAPI
         if (firstPayment.status === "RECEIVED" || firstPayment.status === "CONFIRMED") {
           await sendFacebookCAPI(
             "Purchase",
             { email, phone, ip: req.headers.get("cf-connecting-ip"), userAgent: req.headers.get("user-agent") },
-            { value: p.value / 100, currency: "BRL", content_name: `Assinatura FisioHome - ${p.desc}` },
+            { value: finalValue / 100, currency: "BRL", content_name: `Assinatura FisioHome - ${p.desc}` },
             "https://fisiohome.com/checkout.html",
           );
         }
@@ -303,7 +433,9 @@ serve(async (req) => {
       subscriptionId: sub.id,
       customerId: cust.id,
       plan,
-      value: p.value / 100,
+      value: finalValue / 100,
+      originalValue: p.value / 100,
+      couponCode: coupon,
       billingType: bt,
       status: "active",
       paymentStatus,
@@ -312,6 +444,14 @@ serve(async (req) => {
     });
 
   } catch (err) {
+    // Checkout falhou antes de criar a assinatura/cobrança → devolve o uso
+    // do cupom para não consumir a cota sem venda.
+    if (claimed && !couponSettled) {
+      await api("rpc/release_coupon", {
+        method: "POST",
+        body: JSON.stringify({ p_code: claimed.code, p_email: claimed.email }),
+      }).catch(() => {});
+    }
     return json({ error: err instanceof Error ? err.message : String(err) }, 400);
   }
 });

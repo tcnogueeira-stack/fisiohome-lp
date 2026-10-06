@@ -860,30 +860,46 @@
     let selectedInstallment = 1;
     let couponDiscount = 0;
 
-    // ── Aplicar cupom ──
-    function applyCoupon() {
+    // ── Aplicar cupom (validação real no backend) ──
+    async function applyCoupon() {
       const input = document.getElementById('couponInput');
       const msg = document.getElementById('couponMsg');
-      const code = input.value.trim().toUpperCase();
+      const code = input.value.trim();
 
       if (!code) {
+        couponDiscount = 0;
         msg.textContent = 'Informe um código de cupom.';
         msg.className = 'coupon-msg error';
+        updateSummary();
         return;
       }
 
-      // Exemplo de cupom (substituir por validação real via API)
-      if (code === 'DESCONTO10') {
-        couponDiscount = 0.10;
-        msg.textContent = 'Cupom aplicado! 10% de desconto.';
-        msg.className = 'coupon-msg success';
-      } else if (code === 'FISIO20') {
-        couponDiscount = 0.20;
-        msg.textContent = 'Cupom aplicado! 20% de desconto.';
-        msg.className = 'coupon-msg success';
-      } else {
+      const email = document.getElementById('fieldEmail').value.trim();
+      msg.textContent = 'Validando cupom...';
+      msg.className = 'coupon-msg';
+
+      try {
+        const res = await fetch(ASAAS_CHECKOUT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'validateCoupon', couponCode: code, email, plan: selectedPlan }),
+        });
+        const data = await res.json();
+
+        if (data.valid) {
+          couponDiscount = data.discountPercent / 100;
+          msg.textContent = data.discountPercent >= 100
+            ? 'Cupom aplicado! Acesso gratuito liberado.'
+            : `Cupom aplicado! ${data.discountPercent}% de desconto.`;
+          msg.className = 'coupon-msg success';
+        } else {
+          couponDiscount = 0;
+          msg.textContent = data.message || 'Cupom inválido.';
+          msg.className = 'coupon-msg error';
+        }
+      } catch {
         couponDiscount = 0;
-        msg.textContent = 'Cupom inválido.';
+        msg.textContent = 'Erro ao validar o cupom. Tente novamente.';
         msg.className = 'coupon-msg error';
       }
 
@@ -908,6 +924,8 @@
       } else {
         updateSummary();
       }
+      // Revalida o cupom para o novo plano (pode não ser válido nele)
+      if (document.getElementById('couponInput').value.trim()) applyCoupon();
     }
 
     // ── Gerar parcelas ──
@@ -1047,7 +1065,10 @@
       const couponCode = document.getElementById('couponInput').value.trim();
       if (couponCode) body.couponCode = couponCode;
 
-      if (selectedMethod === 'CREDIT_CARD') {
+      // Cupom de 100%: não existe cobrança — dispensa dados de pagamento
+      const isFree = couponDiscount >= 1;
+
+      if (selectedMethod === 'CREDIT_CARD' && !isFree) {
         const cardNumber = document.getElementById('fieldCardNumber').value.trim().replace(/\s/g, '');
         const cardExpiry = document.getElementById('fieldCardExpiry').value.trim();
         const cardCvv = document.getElementById('fieldCardCvv').value.trim();
@@ -1091,7 +1112,11 @@
         document.getElementById('checkoutWrap').style.display = 'none';
         document.getElementById('checkoutFooter').style.display = 'none';
 
-        if (selectedMethod === 'PIX') {
+        if (data.free) {
+          const successDisplay = document.getElementById('successDisplay');
+          successDisplay.classList.add('visible');
+          document.getElementById('successText').textContent = 'Acesso liberado! Verifique seu e-mail para entrar no FisioHome.';
+        } else if (selectedMethod === 'PIX') {
           const pixDisplay = document.getElementById('pixDisplay');
           pixDisplay.classList.add('visible');
           if (data.pixQrCode) {

@@ -125,6 +125,7 @@ serve(async (req) => {
           paymentId: record.asaas_pay_id,
           method: record.payment_method,
           paidAt: record.paid_at,
+          couponCode: record.coupon_code,
         });
       } catch (err) {
         console.error("falha ao enviar e-mail de pagamento aprovado:", errMsg(err));
